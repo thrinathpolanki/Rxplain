@@ -38,27 +38,25 @@
 <body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
 
     <!-- Header -->
-    <header class="bg-teal-700 text-white p-6 shadow-lg">
+    <header class="bg-teal-700 text-white p-4 md:p-6 shadow-lg transition-all">
         <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="bg-white/20 p-2 rounded-full">
-                    <i data-lucide="heart" class="h-8 w-8 text-teal-50 fill-current"></i>
+                <div class="bg-white/20 p-2 rounded-full shrink-0">
+                    <i data-lucide="heart" class="h-6 w-6 md:h-8 md:w-8 text-teal-50 fill-current"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight">Rxplain</h1>
-                    <p class="text-teal-100 text-sm font-medium">Making Medical Terms Simple</p>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight leading-tight">Rxplain</h1>
+                    <p class="text-teal-100 text-xs md:text-sm font-medium">Making Medical Terms Simple</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <div class="hidden sm:flex items-center gap-2 text-teal-100 text-sm bg-teal-800/50 px-3 py-1 rounded-full border border-teal-600">
-                    <i data-lucide="stethoscope" class="h-4 w-4"></i>
-                    <span>Medical Translator</span>
-                </div>
+            <div class="hidden sm:flex items-center gap-2 text-teal-100 text-xs md:text-sm bg-teal-800/50 px-3 py-1 rounded-full border border-teal-600">
+                <i data-lucide="stethoscope" class="h-4 w-4"></i>
+                <span>Medical Translator</span>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 w-full">
+    <main class="flex-grow max-w-4xl mx-auto p-4 md:p-6 lg:p-8 w-full">
         
         <!-- Disclaimer -->
         <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-md">
@@ -75,9 +73,9 @@
 
         <!-- Input Section -->
         <div id="input-section" class="animate-fade-in-up">
-            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800 mb-2">Let's check your document</h2>
-                <p class="text-slate-600 mb-6">
+            <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-2">Let's check your document</h2>
+                <p class="text-slate-600 mb-6 text-sm md:text-base">
                     Upload a photo of your report, prescription, or type the text below.
                 </p>
 
@@ -87,7 +85,7 @@
                         Paste Text (Optional)
                     </label>
                     <textarea id="input-text"
-                        class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all min-h-[120px]"
+                        class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all min-h-[120px] md:min-h-[150px] text-base"
                         placeholder="e.g., 'Patient prescribed Amoxicillin 500mg TID...'"></textarea>
                 </div>
 
@@ -100,24 +98,24 @@
 
                 <!-- Image Upload Area -->
                 <div id="dropzone"
-                    class="relative border-2 border-dashed border-slate-300 rounded-xl p-8 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
+                    class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 md:p-10 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
                     
                     <input type="file" id="file-input" class="hidden" accept="image/*">
                     
                     <!-- Default View -->
                     <div id="upload-placeholder">
-                        <div class="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
-                            <i data-lucide="upload" class="h-8 w-8"></i>
+                        <div class="bg-teal-100 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
+                            <i data-lucide="upload" class="h-7 w-7 md:h-8 md:w-8"></i>
                         </div>
-                        <p class="text-lg font-bold text-slate-700">Click to upload photo</p>
+                        <p class="text-base md:text-lg font-bold text-slate-700">Click to upload photo</p>
                         <p class="text-sm text-slate-500 mt-1">or drag and drop here</p>
                     </div>
 
                     <!-- Preview View (Hidden by default) -->
                     <div id="preview-container" class="hidden relative inline-block">
-                        <img id="image-preview" src="" alt="Preview" class="max-h-64 rounded-lg shadow-md mx-auto">
+                        <img id="image-preview" src="" alt="Preview" class="max-h-56 md:max-h-72 rounded-lg shadow-md mx-auto">
                         <button id="remove-image-btn"
-                            class="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110">
+                            class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110 touch-manipulation">
                             <i data-lucide="x" class="h-4 w-4"></i>
                         </button>
                         <p class="mt-4 text-sm font-medium text-slate-600">Image attached successfully</p>
@@ -131,9 +129,9 @@
                 </div>
 
                 <!-- Action Button -->
-                <div class="mt-8 flex justify-end">
+                <div class="mt-8 flex flex-col sm:flex-row justify-end">
                     <button id="analyze-btn"
-                        class="flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:transform-none">
+                        class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:transform-none">
                         <span id="btn-text">Explain This to Me</span>
                         <i id="btn-icon" data-lucide="chevron-right" class="h-5 w-5"></i>
                         <i id="btn-spinner" data-lucide="loader-2" class="hidden h-5 w-5 animate-spin"></i>
@@ -146,8 +144,8 @@
         <div id="results-section" class="hidden space-y-6 animate-fade-in-up">
             
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-slate-800">Here is what we found</h2>
-                <button id="clear-btn" class="text-sm font-medium text-slate-500 hover:text-teal-600 underline">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-800">Here is what we found</h2>
+                <button id="clear-btn" class="text-sm font-medium text-slate-500 hover:text-teal-600 underline p-2">
                     Analyze Another
                 </button>
             </div>
@@ -222,9 +220,9 @@
         <div class="max-w-4xl mx-auto px-6 text-center text-slate-500 text-sm">
             
             <!-- Contact Button -->
-            <div class="mb-8">
+            <div class="mb-8 flex justify-center">
                 <a href="mailto:qquantumspace@gmail.com" 
-                   class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-600 rounded-full font-medium transition-all shadow-sm hover:shadow-md">
+                   class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-600 rounded-full font-medium transition-all shadow-sm hover:shadow-md">
                     <i data-lucide="mail" class="h-4 w-4"></i>
                     Contact Us
                 </a>
