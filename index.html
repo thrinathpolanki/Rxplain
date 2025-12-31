@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rxplain</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-teal-700 text-white p-6 shadow-lg">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-full">
+                    <i data-lucide="heart" class="h-8 w-8 text-teal-50 fill-current"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Rxplain</h1>
+                    <p class="text-teal-100 text-sm font-medium">Making Medical Terms Simple</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="hidden sm:flex items-center gap-2 text-teal-100 text-sm bg-teal-800/50 px-3 py-1 rounded-full border border-teal-600">
+                    <i data-lucide="stethoscope" class="h-4 w-4"></i>
+                    <span>Medical Translator</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 w-full">
+        
+        <!-- Disclaimer -->
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-md">
+            <div class="flex items-start">
+                <i data-lucide="alert-circle" class="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0"></i>
+                <div class="text-sm text-amber-800">
+                    <p class="font-bold mb-1">Please Note:</p>
+                    <p>
+                        Rxplain is an AI tool designed to help you understand medical documents. It does not replace a doctor or give medical advice. Always rely on your healthcare professional for treatment decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div id="input-section" class="animate-fade-in-up">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Let's check your document</h2>
+                <p class="text-slate-600 mb-6">
+                    Upload a photo of your report, prescription, or type the text below.
+                </p>
+
+                <!-- Text Input -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        Paste Text (Optional)
+                    </label>
+                    <textarea id="input-text"
+                        class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all min-h-[120px]"
+                        placeholder="e.g., 'Patient prescribed Amoxicillin 500mg TID...'"></textarea>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative flex items-center justify-center mb-6">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold uppercase tracking-wider">OR</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <!-- Image Upload Area -->
+                <div id="dropzone"
+                    class="relative border-2 border-dashed border-slate-300 rounded-xl p-8 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
+                    
+                    <input type="file" id="file-input" class="hidden" accept="image/*">
+                    
+                    <!-- Default View -->
+                    <div id="upload-placeholder">
+                        <div class="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
+                            <i data-lucide="upload" class="h-8 w-8"></i>
+                        </div>
+                        <p class="text-lg font-bold text-slate-700">Click to upload photo</p>
+                        <p class="text-sm text-slate-500 mt-1">or drag and drop here</p>
+                    </div>
+
+                    <!-- Preview View (Hidden by default) -->
+                    <div id="preview-container" class="hidden relative inline-block">
+                        <img id="image-preview" src="" alt="Preview" class="max-h-64 rounded-lg shadow-md mx-auto">
+                        <button id="remove-image-btn"
+                            class="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
+                        <p class="mt-4 text-sm font-medium text-slate-600">Image attached successfully</p>
+                    </div>
+                </div>
+
+                <!-- Error Display -->
+                <div id="error-message" class="hidden mt-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-3">
+                    <i data-lucide="alert-circle" class="h-5 w-5 flex-shrink-0"></i>
+                    <p id="error-text"></p>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-8 flex justify-end">
+                    <button id="analyze-btn"
+                        class="flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:transform-none">
+                        <span id="btn-text">Explain This to Me</span>
+                        <i id="btn-icon" data-lucide="chevron-right" class="h-5 w-5"></i>
+                        <i id="btn-spinner" data-lucide="loader-2" class="hidden h-5 w-5 animate-spin"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (Hidden initially) -->
+        <div id="results-section" class="hidden space-y-6 animate-fade-in-up">
+            
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Here is what we found</h2>
+                <button id="clear-btn" class="text-sm font-medium text-slate-500 hover:text-teal-600 underline">
+                    Analyze Another
+                </button>
+            </div>
+
+            <!-- 1. Simple Summary -->
+            <div class="bg-gradient-to-br from-white to-teal-50/50 rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                    <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                        <i data-lucide="file-text" class="h-5 w-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Simple Summary</h3>
+                </div>
+                <div class="p-6">
+                    <p id="summary-content" class="text-lg leading-relaxed text-slate-700"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 2. Key Terms -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                            <i data-lucide="activity" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Key Medical Terms</h3>
+                    </div>
+                    <div class="p-6">
+                        <ul id="terms-list" class="space-y-4"></ul>
+                    </div>
+                </div>
+
+                <!-- 3. To-Do Checklist -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                            <i data-lucide="check-square" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Your To-Do List</h3>
+                    </div>
+                    <div class="p-6">
+                        <div id="checklist-container" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Important Notes -->
+            <div class="bg-amber-50/30 border border-amber-100 rounded-xl shadow-sm overflow-hidden mb-6">
+                <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                    <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                        <i data-lucide="info" class="h-5 w-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Important Notes</h3>
+                </div>
+                <div class="p-6">
+                    <ul id="notes-list" class="space-y-3"></ul>
+                    
+                    <!-- New Static Note -->
+                    <div class="mt-4 pt-4 border-t border-amber-100">
+                        <div class="flex items-start gap-3 text-slate-600 text-sm">
+                            <i data-lucide="heart-handshake" class="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0"></i>
+                            <p class="italic">Remember: This summary is generated by AI to help you understand better, but always keep the original document for your doctor's reference.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 py-8 bg-slate-100 border-t border-slate-200">
+        <div class="max-w-4xl mx-auto px-6 text-center text-slate-500 text-sm">
+            
+            <!-- Contact Button -->
+            <div class="mb-8">
+                <a href="mailto:qquantumspace@gmail.com" 
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-600 rounded-full font-medium transition-all shadow-sm hover:shadow-md">
+                    <i data-lucide="mail" class="h-4 w-4"></i>
+                    Contact Us
+                </a>
+            </div>
+
+            <p class="mb-2">&copy; <span id="year"></span> Rxplain</p>
+            <p>Designed for empathetic, clear medical communication.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION ---
+        // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqFVoY5H0FidGLBrhJ4W3eg0On2C4P5NsmPtNmvbWwNQmRhH35rtZnV8n-Zu_blm0XIg/exec"; 
+
+        // --- Initialization ---
+        document.getElementById('year').textContent = new Date().getFullYear();
+        lucide.createIcons();
+
+        // --- State ---
+        let selectedImageBase64 = null;
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY_BASE = 1000;
+
+        // --- DOM Elements ---
+        const inputSection = document.getElementById('input-section');
+        const resultsSection = document.getElementById('results-section');
+        const inputText = document.getElementById('input-text');
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const clearBtn = document.getElementById('clear-btn');
+
+        // Results DOM
+        const summaryContent = document.getElementById('summary-content');
+        const termsList = document.getElementById('terms-list');
+        const checklistContainer = document.getElementById('checklist-container');
+        const notesList = document.getElementById('notes-list');
+
+        // --- Event Listeners ---
+
+        // File Selection
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag & Drop
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-teal-500', 'bg-teal-50');
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-teal-500', 'bg-teal-50');
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-teal-500', 'bg-teal-50');
+            if (e.dataTransfer.files.length) {
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Remove Image
+        removeImageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearImage();
+        });
+
+        // Buttons
+        analyzeBtn.addEventListener('click', handleAnalyze);
+        clearBtn.addEventListener('click', resetApp);
+
+        // --- Logic ---
+
+        function handleFileSelect(e) {
+            if (e.target.files.length) {
+                processFile(e.target.files[0]);
+            }
+        }
+
+        function processFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError("Please upload an image file (JPG, PNG).");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                selectedImageBase64 = reader.result;
+                imagePreview.src = selectedImageBase64;
+                uploadPlaceholder.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+                dropzone.classList.add('bg-slate-100', 'border-solid');
+                hideError();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            selectedImageBase64 = null;
+            fileInput.value = '';
+            uploadPlaceholder.classList.remove('hidden');
+            previewContainer.classList.add('hidden');
+            dropzone.classList.remove('bg-slate-100', 'border-solid');
+            imagePreview.src = '';
+        }
+
+        function showError(msg) {
+            errorMessage.classList.remove('hidden');
+            errorText.textContent = msg;
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+            errorText.textContent = '';
+        }
+
+        function setLoading(isLoading) {
+            analyzeBtn.disabled = isLoading;
+            if (isLoading) {
+                btnText.textContent = 'Reading Document...';
+                btnIcon.classList.add('hidden');
+                btnSpinner.classList.remove('hidden');
+            } else {
+                btnText.textContent = 'Explain This to Me';
+                btnIcon.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        async function handleAnalyze() {
+            const text = inputText.value.trim();
+            if (!text && !selectedImageBase64) {
+                showError("Please add text or upload an image to start.");
+                return;
+            }
+
+            if (!APPS_SCRIPT_URL) {
+                showError("Configuration Error: APPS_SCRIPT_URL is missing in the code.");
+                return;
+            }
+
+            hideError();
+            setLoading(true);
+
+            try {
+                // Strip header from Base64 for API if present
+                const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
+                const result = await callGeminiAPI(text, rawBase64);
+                renderResults(result);
+                inputSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
+                showError("I had trouble reading that document. Please try again or try a clearer image.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function resetApp() {
+            inputText.value = '';
+            clearImage();
+            hideError();
+            inputSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            // Clear result HTML
+            summaryContent.innerHTML = '';
+            termsList.innerHTML = '';
+            checklistContainer.innerHTML = '';
+            notesList.innerHTML = '';
+        }
+
+        function renderResults(data) {
+            // 1. Summary
+            summaryContent.textContent = data.summary;
+
+            // 2. Terms
+            if (data.terms && data.terms.length > 0) {
+                termsList.innerHTML = data.terms.map(t => `
+                    <li class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <span class="block font-bold text-teal-700 mb-1">${t.term}</span>
+                        <span class="block text-slate-600 text-sm leading-snug">${t.definition}</span>
+                    </li>
+                `).join('');
+            } else {
+                termsList.innerHTML = '<p class="text-slate-500 italic">No complex terms found to explain.</p>';
+            }
+
+            // 3. Checklist
+            if (data.checklist && data.checklist.length > 0) {
+                checklistContainer.innerHTML = data.checklist.map(item => `
+                    <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group">
+                        <div class="relative flex items-center pt-1">
+                            <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer">
+                        </div>
+                        <span class="text-slate-700 group-hover:text-slate-900 transition-colors">${item}</span>
+                    </label>
+                `).join('');
+            } else {
+                checklistContainer.innerHTML = '<p class="text-slate-500 italic">No specific actions found.</p>';
+            }
+
+            // 4. Notes
+            if (data.notes && data.notes.length > 0) {
+                notesList.innerHTML = data.notes.map(note => `
+                    <li class="flex items-start gap-3 text-slate-700 bg-white p-3 rounded-lg border border-amber-100 shadow-sm">
+                        <i data-lucide="alert-circle" class="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5"></i>
+                        <span>${note}</span>
+                    </li>
+                `).join('');
+                lucide.createIcons(); // Re-render icons for new elements
+            } else {
+                notesList.innerHTML = '<p class="text-slate-500 italic">No warnings or extra notes found.</p>';
+            }
+        }
+
+        // --- Gemini API Logic ---
+
+        async function callGeminiAPI(text, imageBase64) {
+            
+            // 2. Prepare Payload (standard for both Proxy and Direct)
+            const systemPrompt = `
+                You are Rxplain, an empathetic AI health assistant. 
+                Your goal is to support elderly patients, non-native speakers, and caregivers.
+                
+                TASK:
+                1. Read the provided medical text or image content.
+                2. Translate complex medical language into simple English (6th-grade reading level).
+                3. Be friendly, reassuring, and respectful.
+                4. NEVER give diagnoses or medical advice. Only explain and simplify.
+                
+                OUTPUT FORMAT:
+                Return ONLY a raw JSON object (no markdown code blocks) with this exact structure:
+                {
+                  "summary": "A clear, comforting paragraph explaining the document in plain language.",
+                  "terms": [
+                    { "term": "Medical Term", "definition": "Simple definition" }
+                  ],
+                  "checklist": [
+                    "Action item 1 (e.g., Take medication)",
+                    "Action item 2 (e.g., Call doctor)"
+                  ],
+                  "notes": [
+                    "Important warning or date",
+                    "Dosage reminder"
+                  ]
+                }
+            `;
+
+            const userContent = [{ text: text || "Analyze this medical document." }];
+            
+            if (imageBase64) {
+                userContent.push({
+                    inlineData: {
+                        mimeType: "image/jpeg",
+                        data: imageBase64
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: userContent
+                }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json"
+                }
+            };
+
+            // 4. Execute Fetch
+            let attempt = 0;
+            while (attempt < MAX_RETRIES) {
+                try {
+                    // Use 'text/plain' to prevent preflight OPTIONS request for simple GAS Web Apps
+                    const headers = { 'Content-Type': 'text/plain' };
+
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(payload) 
+                    });
+
+                    if (!response.ok) {
+                         throw new Error(`API Error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.error) throw new Error(data.error);
+
+                    // Extract text based on Gemini structure
+                    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (!rawText) throw new Error("No content generated");
+                    
+                    return JSON.parse(rawText);
+
+                } catch (error) {
+                    console.warn(`Attempt ${attempt + 1} failed:`, error);
+                    attempt++;
+                    if (attempt === MAX_RETRIES) throw error;
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_BASE * Math.pow(2, attempt)));
+                }
+            }
+            throw new Error("Failed to connect to Rxplain service.");
+        }
+    </script>
+</body>
+</html>
