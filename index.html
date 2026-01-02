@@ -33,6 +33,29 @@
         .animate-spin {
             animation: spin 1s linear infinite;
         }
+
+        /* Custom Scrollbar for Language Modal */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
@@ -135,6 +158,114 @@
                         <span id="btn-text">Explain This to Me</span>
                         <i id="btn-icon" data-lucide="chevron-right" class="h-5 w-5"></i>
                         <i id="btn-spinner" data-lucide="loader-2" class="hidden h-5 w-5 animate-spin"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language Selection Modal (Updated) -->
+        <div id="language-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col max-h-[85vh] border border-slate-200">
+                <!-- Modal Header -->
+                <div class="bg-teal-700 px-6 py-5 shrink-0 rounded-t-2xl flex items-center justify-between">
+                    <h3 class="text-white font-bold text-xl flex items-center gap-3">
+                        <i data-lucide="languages" class="h-6 w-6"></i>
+                        Select Output Language
+                    </h3>
+                    <button onclick="closeLanguageModal()" class="text-teal-100 hover:text-white transition-colors">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+                
+                <!-- Scrollable Content -->
+                <div class="p-6 overflow-y-auto custom-scrollbar bg-slate-50">
+                    <p class="text-slate-600 text-sm mb-4 font-medium">Please choose your preferred language for the report:</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        <!-- Default -->
+                        <button onclick="selectLanguage('English')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-800 font-bold transition-all text-center">
+                            English
+                        </button>
+
+                        <!-- Hindi moved to second place -->
+                        <button onclick="selectLanguage('Hindi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Hindi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">हिंदी</span>
+                        </button>
+
+                        <!-- Common South Indian -->
+                        <button onclick="selectLanguage('Telugu')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Telugu<br><span class="text-xs text-slate-500 group-hover:text-teal-600">తెలుగు</span>
+                        </button>
+                        <button onclick="selectLanguage('Tamil')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Tamil<br><span class="text-xs text-slate-500 group-hover:text-teal-600">தமிழ்</span>
+                        </button>
+                        <button onclick="selectLanguage('Kannada')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Kannada<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ಕನ್ನಡ</span>
+                        </button>
+                        <button onclick="selectLanguage('Malayalam')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Malayalam<br><span class="text-xs text-slate-500 group-hover:text-teal-600">മലയാളം</span>
+                        </button>
+
+                        <!-- Major North/West/East -->
+                        <button onclick="selectLanguage('Marathi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Marathi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">मराठी</span>
+                        </button>
+                        <button onclick="selectLanguage('Gujarati')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Gujarati<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ગુજરાતી</span>
+                        </button>
+                        <button onclick="selectLanguage('Bengali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Bengali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">বাংলা</span>
+                        </button>
+                        <button onclick="selectLanguage('Punjabi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Punjabi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ਪੰਜਾਬੀ</span>
+                        </button>
+                        
+                        <!-- Others -->
+                        <button onclick="selectLanguage('Urdu')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Urdu<br><span class="text-xs text-slate-500 group-hover:text-teal-600">اردو</span>
+                        </button>
+                        <button onclick="selectLanguage('Odia')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Odia<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ଓଡ଼ିଆ</span>
+                        </button>
+                         <button onclick="selectLanguage('Assamese')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Assamese<br><span class="text-xs text-slate-500 group-hover:text-teal-600">অসমীয়া</span>
+                        </button>
+                        <button onclick="selectLanguage('Maithili')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Maithili<br><span class="text-xs text-slate-500 group-hover:text-teal-600">मैथिली</span>
+                        </button>
+                        <button onclick="selectLanguage('Santali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Santali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ᱥᱟᱱᱛᱟᱲᱤ</span>
+                        </button>
+                        <button onclick="selectLanguage('Kashmiri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Kashmiri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">كأشُر</span>
+                        </button>
+                        <button onclick="selectLanguage('Nepali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Nepali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">नेपाली</span>
+                        </button>
+                        <button onclick="selectLanguage('Konkani')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Konkani<br><span class="text-xs text-slate-500 group-hover:text-teal-600">कोंकणी</span>
+                        </button>
+                        <button onclick="selectLanguage('Sindhi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Sindhi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">सिन्धी</span>
+                        </button>
+                        <button onclick="selectLanguage('Dogri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Dogri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">डोगरी</span>
+                        </button>
+                        <button onclick="selectLanguage('Manipuri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Manipuri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ꯃꯩꯇꯩꯂꯣꯟ</span>
+                        </button>
+                        <button onclick="selectLanguage('Bodo')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Bodo<br><span class="text-xs text-slate-500 group-hover:text-teal-600">बर'</span>
+                        </button>
+                        <button onclick="selectLanguage('Sanskrit')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                            Sanskrit<br><span class="text-xs text-slate-500 group-hover:text-teal-600">संस्कृतम्</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="p-4 border-t border-slate-200 bg-white text-center rounded-b-2xl shrink-0">
+                    <button onclick="closeLanguageModal()" class="text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors py-2 px-6 rounded-full hover:bg-slate-100">
+                        Cancel Selection
                     </button>
                 </div>
             </div>
@@ -261,9 +392,11 @@
         const errorText = document.getElementById('error-text');
         const analyzeBtn = document.getElementById('analyze-btn');
         const btnText = document.getElementById('btn-text');
-        const btnIcon = document.getElementById('btn-icon');
-        const btnSpinner = document.getElementById('btn-spinner');
+        // NOTE: btnIcon and btnSpinner references here are to the INITIAL DOM elements.
+        // If Lucide replaces them, these references become stale.
+        // We will fetch them dynamically in setLoading instead.
         const clearBtn = document.getElementById('clear-btn');
+        const languageModal = document.getElementById('language-modal');
 
         // Results DOM
         const summaryContent = document.getElementById('summary-content');
@@ -349,19 +482,25 @@
         }
 
         function setLoading(isLoading) {
+            // FIX: Re-query DOM elements in case Lucide replaced them
+            const currentBtnIcon = document.getElementById('btn-icon');
+            const currentBtnSpinner = document.getElementById('btn-spinner');
+
             analyzeBtn.disabled = isLoading;
             if (isLoading) {
                 btnText.textContent = 'Reading Document...';
-                btnIcon.classList.add('hidden');
-                btnSpinner.classList.remove('hidden');
+                if(currentBtnIcon) currentBtnIcon.classList.add('hidden');
+                if(currentBtnSpinner) currentBtnSpinner.classList.remove('hidden');
             } else {
                 btnText.textContent = 'Explain This to Me';
-                btnIcon.classList.remove('hidden');
-                btnSpinner.classList.add('hidden');
+                if(currentBtnIcon) currentBtnIcon.classList.remove('hidden');
+                if(currentBtnSpinner) currentBtnSpinner.classList.add('hidden');
             }
         }
 
-        async function handleAnalyze() {
+        // --- Language Modal & Main Flow ---
+
+        function handleAnalyze() {
             const text = inputText.value.trim();
             if (!text && !selectedImageBase64) {
                 showError("Please add text or upload an image to start.");
@@ -374,12 +513,23 @@
             }
 
             hideError();
+            // Show Language Modal instead of calling API directly
+            languageModal.classList.remove('hidden');
+        }
+
+        function closeLanguageModal() {
+            languageModal.classList.add('hidden');
+        }
+
+        async function selectLanguage(language) {
+            closeLanguageModal();
             setLoading(true);
 
+            const text = inputText.value.trim();
             try {
                 // Strip header from Base64 for API if present
                 const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
-                const result = await callGeminiAPI(text, rawBase64);
+                const result = await callGeminiAPI(text, rawBase64, language);
                 renderResults(result);
                 inputSection.classList.add('hidden');
                 resultsSection.classList.remove('hidden');
@@ -395,6 +545,7 @@
             inputText.value = '';
             clearImage();
             hideError();
+            setLoading(false); // Reset loading state
             inputSection.classList.remove('hidden');
             resultsSection.classList.add('hidden');
             // Clear result HTML
@@ -442,7 +593,9 @@
                         <span>${note}</span>
                     </li>
                 `).join('');
-                lucide.createIcons(); // Re-render icons for new elements
+                
+                // FIX: Scope the icon creation to only the notes list to avoid re-rendering (and replacing) button icons
+                lucide.createIcons({ root: notesList }); 
             } else {
                 notesList.innerHTML = '<p class="text-slate-500 italic">No warnings or extra notes found.</p>';
             }
@@ -450,7 +603,7 @@
 
         // --- Gemini API Logic ---
 
-        async function callGeminiAPI(text, imageBase64) {
+        async function callGeminiAPI(text, imageBase64, language = 'English') {
             
             // 2. Prepare Payload (standard for both Proxy and Direct)
             const systemPrompt = `
@@ -459,26 +612,28 @@
                 
                 TASK:
                 1. Read the provided medical text or image content.
-                2. Translate complex medical language into simple English (6th-grade reading level).
+                2. Translate complex medical language into simple, comforting ${language}.
                 3. Be friendly, reassuring, and respectful.
                 4. NEVER give diagnoses or medical advice. Only explain and simplify.
                 
                 OUTPUT FORMAT:
                 Return ONLY a raw JSON object (no markdown code blocks) with this exact structure:
                 {
-                  "summary": "A clear, comforting paragraph explaining the document in plain language.",
+                  "summary": "A clear, comforting paragraph explaining the document in ${language}.",
                   "terms": [
-                    { "term": "Medical Term", "definition": "Simple definition" }
+                    { "term": "Medical Term (in English)", "definition": "Simple definition in ${language}" }
                   ],
                   "checklist": [
-                    "Action item 1 (e.g., Take medication)",
-                    "Action item 2 (e.g., Call doctor)"
+                    "Action item 1 in ${language}",
+                    "Action item 2 in ${language}"
                   ],
                   "notes": [
-                    "Important warning or date",
-                    "Dosage reminder"
+                    "Important warning or date in ${language}",
+                    "Dosage reminder in ${language}"
                   ]
                 }
+                
+                IMPORTANT: Keep the JSON keys (summary, terms, checklist, notes, term, definition) in English. Only translate the values.
             `;
 
             const userContent = [{ text: text || "Analyze this medical document." }];
