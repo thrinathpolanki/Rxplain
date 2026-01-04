@@ -11,6 +11,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- html2canvas for Screenshot -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -163,7 +166,7 @@
             </div>
         </div>
 
-        <!-- Language Selection Modal (Updated) -->
+        <!-- Language Selection Modal -->
         <div id="language-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
             <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col max-h-[85vh] border border-slate-200">
                 <!-- Modal Header -->
@@ -186,7 +189,7 @@
                             English
                         </button>
 
-                        <!-- Hindi moved to second place -->
+                        <!-- Hindi -->
                         <button onclick="selectLanguage('Hindi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
                             Hindi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">हिंदी</span>
                         </button>
@@ -276,71 +279,92 @@
             
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl md:text-2xl font-bold text-slate-800">Here is what we found</h2>
-                <button id="clear-btn" class="text-sm font-medium text-slate-500 hover:text-teal-600 underline p-2">
-                    Analyze Another
+                
+                <!-- Read Aloud Button -->
+                <button id="speak-btn" onclick="toggleSpeech()" class="p-2.5 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm flex items-center justify-center" title="Read Aloud">
+                    <i data-lucide="volume-2" class="h-5 w-5"></i>
                 </button>
             </div>
 
-            <!-- 1. Simple Summary -->
-            <div class="bg-gradient-to-br from-white to-teal-50/50 rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                    <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                        <i data-lucide="file-text" class="h-5 w-5"></i>
+            <!-- Content Container for Download -->
+            <div id="download-content" class="space-y-6 bg-slate-50 p-2 rounded-xl">
+                <!-- 1. Simple Summary -->
+                <div class="bg-gradient-to-br from-white to-teal-50/50 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                            <i data-lucide="file-text" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Simple Summary</h3>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-800">Simple Summary</h3>
+                    <div class="p-6">
+                        <p id="summary-content" class="text-lg leading-relaxed text-slate-700"></p>
+                    </div>
                 </div>
-                <div class="p-6">
-                    <p id="summary-content" class="text-lg leading-relaxed text-slate-700"></p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 2. Key Terms -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                                <i data-lucide="activity" class="h-5 w-5"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Key Medical Terms</h3>
+                        </div>
+                        <div class="p-6">
+                            <ul id="terms-list" class="space-y-4"></ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. To-Do Checklist -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                                <i data-lucide="check-square" class="h-5 w-5"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Your To-Do List</h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="checklist-container" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Important Notes -->
+                <div class="bg-amber-50/30 border border-amber-100 rounded-xl shadow-sm overflow-hidden">
+                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                            <i data-lucide="info" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Important Notes</h3>
+                    </div>
+                    <div class="p-6">
+                        <ul id="notes-list" class="space-y-3"></ul>
+                        
+                        <!-- New Static Note -->
+                        <div class="mt-4 pt-4 border-t border-amber-100">
+                            <div class="flex items-start gap-3 text-slate-600 text-sm">
+                                <i data-lucide="heart-handshake" class="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0"></i>
+                                <p class="italic">Remember: This summary is generated by AI to help you understand better, but always keep the original document for your doctor's reference.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 2. Key Terms -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                            <i data-lucide="activity" class="h-5 w-5"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">Key Medical Terms</h3>
-                    </div>
-                    <div class="p-6">
-                        <ul id="terms-list" class="space-y-4"></ul>
-                    </div>
-                </div>
+            <!-- Footer Buttons Container -->
+            <div class="mt-8 flex flex-col-reverse sm:flex-row items-center justify-between pb-8 gap-4">
+                
+                <!-- Download Button (Left) -->
+                <button onclick="downloadReport()" class="p-4 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm group" title="Save as Image">
+                    <i data-lucide="download" class="h-6 w-6 group-hover:scale-110 transition-transform"></i>
+                </button>
 
-                <!-- 3. To-Do Checklist -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                            <i data-lucide="check-square" class="h-5 w-5"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">Your To-Do List</h3>
-                    </div>
-                    <div class="p-6">
-                        <div id="checklist-container" class="space-y-3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Important Notes -->
-            <div class="bg-amber-50/30 border border-amber-100 rounded-xl shadow-sm overflow-hidden mb-6">
-                <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                    <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                        <i data-lucide="info" class="h-5 w-5"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-800">Important Notes</h3>
-                </div>
-                <div class="p-6">
-                    <ul id="notes-list" class="space-y-3"></ul>
-                    
-                    <!-- New Static Note -->
-                    <div class="mt-4 pt-4 border-t border-amber-100">
-                        <div class="flex items-start gap-3 text-slate-600 text-sm">
-                            <i data-lucide="heart-handshake" class="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0"></i>
-                            <p class="italic">Remember: This summary is generated by AI to help you understand better, but always keep the original document for your doctor's reference.</p>
-                        </div>
-                    </div>
-                </div>
+                <!-- Analyze Another Button (Right) -->
+                <button id="clear-btn"
+                    class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95">
+                    <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                    <span>Analyze Another</span>
+                </button>
             </div>
         </div>
 
@@ -359,7 +383,7 @@
                 </a>
             </div>
 
-            <p class="mb-2">&copy; <span id="year"></span> Rxplain</p>
+            <p class="mb-2">&copy; <span id="year"></span> Rxplain by trimitha.co</p>
             <p>Designed for empathetic, clear medical communication.</p>
         </div>
     </footer>
@@ -375,6 +399,9 @@
 
         // --- State ---
         let selectedImageBase64 = null;
+        let currentLanguage = 'English'; // Track current language
+        let isSpeaking = false;
+        let currentUtterance = null; // New global variable to prevent GC
         const MAX_RETRIES = 3;
         const RETRY_DELAY_BASE = 1000;
 
@@ -522,6 +549,7 @@
         }
 
         async function selectLanguage(language) {
+            currentLanguage = language; // Save selected language
             closeLanguageModal();
             setLoading(true);
 
@@ -531,6 +559,18 @@
                 const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
                 const result = await callGeminiAPI(text, rawBase64, language);
                 renderResults(result);
+
+                // --- UPDATE: Hide Speaker Button for non-English languages ---
+                const speakBtn = document.getElementById('speak-btn');
+                if (language === 'English') {
+                    speakBtn.classList.remove('hidden');
+                    speakBtn.classList.add('flex');
+                } else {
+                    speakBtn.classList.add('hidden');
+                    speakBtn.classList.remove('flex');
+                }
+                // -------------------------------------------------------------
+
                 inputSection.classList.add('hidden');
                 resultsSection.classList.remove('hidden');
             } catch (err) {
@@ -542,6 +582,13 @@
         }
 
         function resetApp() {
+            // Stop speech if running
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                updateSpeakButton(false);
+            }
+
             inputText.value = '';
             clearImage();
             hideError();
@@ -599,6 +646,200 @@
             } else {
                 notesList.innerHTML = '<p class="text-slate-500 italic">No warnings or extra notes found.</p>';
             }
+        }
+
+        // --- Speech Logic ---
+        function toggleSpeech() {
+            const synth = window.speechSynthesis;
+            
+            if (isSpeaking) {
+                synth.cancel();
+                isSpeaking = false;
+                updateSpeakButton(false);
+                return;
+            }
+
+            const text = generateSpeechText();
+            if (!text) return;
+
+            // Prevent Garbage Collection by making it global property
+            window.currentUtterance = new SpeechSynthesisUtterance(text);
+            
+            // SETTINGS FOR A "SWEET" VOICE
+            window.currentUtterance.pitch = 1.1; // Slightly higher pitch for a softer/sweeter tone
+            window.currentUtterance.rate = 0.9;  // Slightly slower for a calming effect
+            
+            const langMap = {
+                'English': 'en-US',
+                'Hindi': 'hi-IN',
+                'Telugu': 'te-IN',
+                'Tamil': 'ta-IN',
+                'Kannada': 'kn-IN',
+                'Malayalam': 'ml-IN',
+                'Marathi': 'mr-IN',
+                'Gujarati': 'gu-IN',
+                'Bengali': 'bn-IN',
+                'Punjabi': 'pa-IN',
+                'Urdu': 'ur-IN',
+                'Odia': 'or-IN',
+                'Assamese': 'as-IN',
+                'Maithili': 'mai-IN',
+                'Santali': 'sat-IN',
+                'Kashmiri': 'ks-IN',
+                'Nepali': 'ne-NP',
+                'Konkani': 'kok-IN',
+                'Sindhi': 'sd-IN',
+                'Dogri': 'doi-IN',
+                'Manipuri': 'mni-IN',
+                'Bodo': 'brx-IN',
+                'Sanskrit': 'sa-IN'
+            };
+            
+            const targetLang = langMap[currentLanguage] || 'en-US';
+            window.currentUtterance.lang = targetLang;
+
+            // Helper to find the "sweetest" available voice
+            const findBestVoice = (voices) => {
+                // Filter for the target language
+                const langVoices = voices.filter(v => v.lang === targetLang || v.lang.startsWith(targetLang.split('-')[0]));
+                
+                if (langVoices.length === 0) return null;
+
+                // Priority keywords for softer/female/high-quality voices
+                const preferredKeywords = ['Google', 'Female', 'Samantha', 'Zira', 'Eva', 'Veena', 'Heera', 'Rishi']; 
+                
+                for (const keyword of preferredKeywords) {
+                    const found = langVoices.find(v => v.name.includes(keyword));
+                    if (found) return found;
+                }
+                
+                return langVoices[0];
+            };
+
+            // Attempt to find a specific voice for better compatibility
+            let voices = synth.getVoices();
+            if (voices.length === 0) {
+                 // Try to reload voices if empty
+                 speechSynthesis.onvoiceschanged = () => {
+                    voices = synth.getVoices();
+                    const bestVoice = findBestVoice(voices);
+                    if (bestVoice) window.currentUtterance.voice = bestVoice;
+                    
+                    // Re-attach handlers
+                    window.currentUtterance.onend = () => { isSpeaking = false; updateSpeakButton(false); };
+                    window.currentUtterance.onerror = (e) => {
+                        // Suppress logs for interrupted or canceled errors
+                        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+                            console.error('Speech error:', e.error);
+                            isSpeaking = false;
+                            updateSpeakButton(false);
+                        }
+                    };
+                    synth.speak(window.currentUtterance);
+                    isSpeaking = true;
+                    updateSpeakButton(true);
+                 };
+            } else {
+                 const bestVoice = findBestVoice(voices);
+                 if (bestVoice) {
+                    window.currentUtterance.voice = bestVoice;
+                 }
+            }
+            
+            window.currentUtterance.onend = () => {
+                isSpeaking = false;
+                updateSpeakButton(false);
+            };
+            
+            window.currentUtterance.onerror = (e) => {
+                // Suppress logs for interrupted or canceled errors
+                if (e.error !== 'interrupted' && e.error !== 'canceled') {
+                    console.error('Speech error details:', e.error);
+                    isSpeaking = false;
+                    updateSpeakButton(false);
+                }
+            };
+
+            // Workaround for some browser states
+            synth.cancel();
+            
+            setTimeout(() => {
+                synth.speak(window.currentUtterance);
+                isSpeaking = true;
+                updateSpeakButton(true);
+            }, 10);
+        }
+
+        function updateSpeakButton(speaking) {
+            const btn = document.getElementById('speak-btn');
+            if (!btn) return;
+
+            if (speaking) {
+                btn.innerHTML = '<i data-lucide="square" class="h-5 w-5 fill-current"></i>'; // Stop icon
+                btn.classList.add('text-red-500', 'border-red-200');
+            } else {
+                btn.innerHTML = '<i data-lucide="volume-2" class="h-5 w-5"></i>'; // Play icon
+                btn.classList.remove('text-red-500', 'border-red-200');
+            }
+            lucide.createIcons({ root: btn.parentNode });
+        }
+
+        function generateSpeechText() {
+            // Collect text from the visual elements
+            let text = "";
+            
+            // Summary
+            text += "Summary: " + (summaryContent.textContent || "") + ". ";
+            
+            // Terms
+            text += "Key Medical Terms: ";
+            const termItems = termsList.querySelectorAll('li');
+            termItems.forEach(item => {
+                text += item.textContent + ". ";
+            });
+            
+            // Checklist
+            text += "Your To-Do List: ";
+            const checkItems = checklistContainer.querySelectorAll('label');
+            checkItems.forEach(item => {
+                text += item.textContent.trim() + ". ";
+            });
+            
+            // Notes
+            text += "Important Notes: ";
+            const noteItems = notesList.querySelectorAll('li');
+            noteItems.forEach(item => {
+                text += item.textContent + ". ";
+            });
+
+            return text;
+        }
+
+        // --- Screenshot / Download Logic ---
+        function downloadReport() {
+            const element = document.getElementById('download-content');
+            
+            // Add loading cursor
+            document.body.style.cursor = 'wait';
+            
+            html2canvas(element, {
+                scale: 2, // High resolution
+                backgroundColor: '#f8fafc', // match bg-slate-50
+                useCORS: true, // handle cross-origin images if any
+                logging: false
+            }).then(canvas => {
+                // Restore cursor
+                document.body.style.cursor = 'default';
+                
+                const link = document.createElement('a');
+                link.download = 'Rxplain-Medical-Summary.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                document.body.style.cursor = 'default';
+                console.error("Screenshot failed:", err);
+                alert("Could not generate image. Please try again.");
+            });
         }
 
         // --- Gemini API Logic ---
