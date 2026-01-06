@@ -14,6 +14,12 @@
     <!-- html2canvas for Screenshot -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
+    <!-- Firebase SDKs (v9 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -29,7 +35,6 @@
             animation: fadeInUp 0.5s ease-out forwards;
         }
 
-        /* Loading Spinner */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -37,431 +42,997 @@
             animation: spin 1s linear infinite;
         }
 
-        /* Custom Scrollbar for Language Modal */
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        /* Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-teal-700 text-white p-4 md:p-6 shadow-lg transition-all">
-        <div class="max-w-4xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="bg-white/20 p-2 rounded-full shrink-0">
-                    <i data-lucide="heart" class="h-6 w-6 md:h-8 md:w-8 text-teal-50 fill-current"></i>
+    <!-- AUTHENTICATION SECTION (Visible when logged out) -->
+    <div id="auth-container" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 animate-fade-in-up">
+            
+            <!-- Auth Header -->
+            <div class="bg-teal-700 p-8 text-center text-white">
+                <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="heart" class="h-8 w-8 text-teal-50 fill-current"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold tracking-tight leading-tight">Rxplain</h1>
-                    <p class="text-teal-100 text-xs md:text-sm font-medium">Making Medical Terms Simple</p>
-                </div>
+                <h1 class="text-2xl font-bold">Welcome to Rxplain</h1>
+                <p class="text-teal-100 text-sm mt-2">Your Empathetic AI Medical Assistant</p>
             </div>
-            <div class="hidden sm:flex items-center gap-2 text-teal-100 text-xs md:text-sm bg-teal-800/50 px-3 py-1 rounded-full border border-teal-600">
-                <i data-lucide="stethoscope" class="h-4 w-4"></i>
-                <span>Medical Translator</span>
-            </div>
-        </div>
-    </header>
 
-    <main class="flex-grow max-w-4xl mx-auto p-4 md:p-6 lg:p-8 w-full">
-        
-        <!-- Disclaimer -->
-        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-md">
-            <div class="flex items-start">
-                <i data-lucide="alert-circle" class="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0"></i>
-                <div class="text-sm text-amber-800">
-                    <p class="font-bold mb-1">Please Note:</p>
-                    <p>
-                        Rxplain is an AI tool designed to help you understand medical documents. It does not replace a doctor or give medical advice. Always rely on your healthcare professional for treatment decisions.
+            <!-- Auth Body -->
+            <div class="p-8">
+                
+                <!-- Error Alert -->
+                <div id="auth-error" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-start gap-2">
+                    <i data-lucide="alert-circle" class="h-4 w-4 shrink-0 mt-0.5"></i>
+                    <span id="auth-error-text"></span>
+                </div>
+
+                <!-- Success Alert -->
+                <div id="auth-success" class="hidden mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg flex items-center gap-2">
+                    <i data-lucide="check-circle" class="h-4 w-4 shrink-0"></i>
+                    <span id="auth-success-text"></span>
+                </div>
+
+                <!-- MAIN AUTH VIEW (Login/Signup) -->
+                <div id="main-auth-view">
+                    <!-- Google Sign In -->
+                    <button onclick="handleGoogleSignIn()" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-xl transition-all shadow-sm mb-6">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+
+                    <div class="relative flex items-center justify-center mb-6">
+                        <div class="flex-grow border-t border-slate-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase tracking-wider">Or Email</span>
+                        <div class="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <!-- Email Form -->
+                    <form id="auth-form" onsubmit="handleEmailAuth(event)">
+                        <div class="space-y-4">
+                            <!-- Name Fields (Hidden by default, shown for Sign Up) -->
+                            <div id="auth-name-fields" class="hidden grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                                    <input type="text" id="auth-firstname" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                                    <input type="text" id="auth-lastname" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                                <input type="email" id="auth-email" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                                <input type="password" id="auth-password" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none">
+                                <div class="text-right mt-1">
+                                    <button type="button" id="forgot-password-link" onclick="toggleForgotPasswordView()" class="text-xs text-teal-600 hover:underline hover:text-teal-800">Forgot Password?</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="auth-submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors mt-6 flex justify-center items-center gap-2">
+                            <span>Sign In</span>
+                            <span id="auth-spinner" class="hidden"><i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i></span>
+                        </button>
+                    </form>
+
+                    <p class="text-center mt-6 text-sm text-slate-600">
+                        <span id="auth-toggle-text">Don't have an account?</span>
+                        <button onclick="toggleAuthMode()" class="text-teal-600 font-bold hover:underline ml-1" id="auth-toggle-btn">Sign Up</button>
                     </p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Input Section -->
-        <div id="input-section" class="animate-fade-in-up">
-            <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-2">Let's check your document</h2>
-                <p class="text-slate-600 mb-6 text-sm md:text-base">
-                    Upload a photo of your report, prescription, or type the text below.
-                </p>
-
-                <!-- Text Input -->
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">
-                        Paste Text (Optional)
-                    </label>
-                    <textarea id="input-text"
-                        class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all min-h-[120px] md:min-h-[150px] text-base"
-                        placeholder="e.g., 'Patient prescribed Amoxicillin 500mg TID...'"></textarea>
-                </div>
-
-                <!-- Divider -->
-                <div class="relative flex items-center justify-center mb-6">
-                    <div class="flex-grow border-t border-slate-200"></div>
-                    <span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold uppercase tracking-wider">OR</span>
-                    <div class="flex-grow border-t border-slate-200"></div>
-                </div>
-
-                <!-- Image Upload Area -->
-                <div id="dropzone"
-                    class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 md:p-10 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
+                <!-- FORGOT PASSWORD VIEW (Hidden initially) -->
+                <div id="forgot-password-view" class="hidden animate-fade-in-up">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2">Reset Password</h2>
+                    <p class="text-sm text-slate-600 mb-6">Enter your email address and we'll send you a link to reset your password.</p>
                     
-                    <input type="file" id="file-input" class="hidden" accept="image/*">
-                    
-                    <!-- Default View -->
-                    <div id="upload-placeholder">
-                        <div class="bg-teal-100 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
-                            <i data-lucide="upload" class="h-7 w-7 md:h-8 md:w-8"></i>
+                    <form onsubmit="handlePasswordReset(event)">
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                            <input type="email" id="reset-email" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none">
                         </div>
-                        <p class="text-base md:text-lg font-bold text-slate-700">Click to upload photo</p>
-                        <p class="text-sm text-slate-500 mt-1">or drag and drop here</p>
-                    </div>
-
-                    <!-- Preview View (Hidden by default) -->
-                    <div id="preview-container" class="hidden relative inline-block">
-                        <img id="image-preview" src="" alt="Preview" class="max-h-56 md:max-h-72 rounded-lg shadow-md mx-auto">
-                        <button id="remove-image-btn"
-                            class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110 touch-manipulation">
-                            <i data-lucide="x" class="h-4 w-4"></i>
+                        
+                        <button type="submit" id="reset-submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2">
+                            <span>Send Reset Link</span>
+                            <span id="reset-spinner" class="hidden"><i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i></span>
                         </button>
-                        <p class="mt-4 text-sm font-medium text-slate-600">Image attached successfully</p>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <button onclick="toggleForgotPasswordView()" class="text-sm text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 mx-auto">
+                            <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to Sign In
+                        </button>
                     </div>
                 </div>
 
-                <!-- Error Display -->
-                <div id="error-message" class="hidden mt-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-3">
-                    <i data-lucide="alert-circle" class="h-5 w-5 flex-shrink-0"></i>
-                    <p id="error-text"></p>
-                </div>
-
-                <!-- Action Button -->
-                <div class="mt-8 flex flex-col sm:flex-row justify-end">
-                    <button id="analyze-btn"
-                        class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:transform-none">
-                        <span id="btn-text">Explain This to Me</span>
-                        <i id="btn-icon" data-lucide="chevron-right" class="h-5 w-5"></i>
-                        <i id="btn-spinner" data-lucide="loader-2" class="hidden h-5 w-5 animate-spin"></i>
-                    </button>
-                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Language Selection Modal -->
-        <div id="language-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col max-h-[85vh] border border-slate-200">
-                <!-- Modal Header -->
-                <div class="bg-teal-700 px-6 py-5 shrink-0 rounded-t-2xl flex items-center justify-between">
-                    <h3 class="text-white font-bold text-xl flex items-center gap-3">
-                        <i data-lucide="languages" class="h-6 w-6"></i>
-                        Select Output Language
-                    </h3>
-                    <button onclick="closeLanguageModal()" class="text-teal-100 hover:text-white transition-colors">
-                        <i data-lucide="x" class="h-6 w-6"></i>
-                    </button>
+    <!-- APP CONTENT (Protected, Hidden by default) -->
+    <div id="app-container" class="hidden flex-col min-h-screen">
+        <!-- Header -->
+        <header class="bg-teal-700 text-white p-4 md:p-6 shadow-lg transition-all sticky top-0 z-40">
+            <div class="max-w-4xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/20 p-2 rounded-full shrink-0">
+                        <i data-lucide="heart" class="h-6 w-6 md:h-8 md:w-8 text-teal-50 fill-current"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold tracking-tight leading-tight">Rxplain</h1>
+                        <p class="text-teal-100 text-xs md:text-sm font-medium">Making Medical Terms Simple</p>
+                    </div>
                 </div>
                 
-                <!-- Scrollable Content -->
-                <div class="p-6 overflow-y-auto custom-scrollbar bg-slate-50">
-                    <p class="text-slate-600 text-sm mb-4 font-medium">Please choose your preferred language for the report:</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        <!-- Default -->
-                        <button onclick="selectLanguage('English')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-800 font-bold transition-all text-center">
-                            English
-                        </button>
-
-                        <!-- Hindi -->
-                        <button onclick="selectLanguage('Hindi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Hindi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">हिंदी</span>
-                        </button>
-
-                        <!-- Common South Indian -->
-                        <button onclick="selectLanguage('Telugu')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Telugu<br><span class="text-xs text-slate-500 group-hover:text-teal-600">తెలుగు</span>
-                        </button>
-                        <button onclick="selectLanguage('Tamil')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Tamil<br><span class="text-xs text-slate-500 group-hover:text-teal-600">தமிழ்</span>
-                        </button>
-                        <button onclick="selectLanguage('Kannada')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Kannada<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ಕನ್ನಡ</span>
-                        </button>
-                        <button onclick="selectLanguage('Malayalam')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Malayalam<br><span class="text-xs text-slate-500 group-hover:text-teal-600">മലയാളം</span>
-                        </button>
-
-                        <!-- Major North/West/East -->
-                        <button onclick="selectLanguage('Marathi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Marathi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">मराठी</span>
-                        </button>
-                        <button onclick="selectLanguage('Gujarati')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Gujarati<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ગુજરાતી</span>
-                        </button>
-                        <button onclick="selectLanguage('Bengali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Bengali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">বাংলা</span>
-                        </button>
-                        <button onclick="selectLanguage('Punjabi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Punjabi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ਪੰਜਾਬੀ</span>
+                <div class="flex items-center gap-3">
+                    <!-- User Profile Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 bg-teal-800/50 hover:bg-teal-600 px-3 py-1.5 rounded-full border border-teal-600 transition-colors">
+                            <div id="user-avatar" class="w-6 h-6 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center text-xs font-bold">U</div>
+                            <span id="user-email" class="text-xs md:text-sm hidden sm:inline max-w-[100px] truncate">User</span>
+                            <i data-lucide="chevron-down" class="h-4 w-4"></i>
                         </button>
                         
-                        <!-- Others -->
-                        <button onclick="selectLanguage('Urdu')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Urdu<br><span class="text-xs text-slate-500 group-hover:text-teal-600">اردو</span>
-                        </button>
-                        <button onclick="selectLanguage('Odia')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Odia<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ଓଡ଼ିଆ</span>
-                        </button>
-                         <button onclick="selectLanguage('Assamese')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Assamese<br><span class="text-xs text-slate-500 group-hover:text-teal-600">অসমীয়া</span>
-                        </button>
-                        <button onclick="selectLanguage('Maithili')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Maithili<br><span class="text-xs text-slate-500 group-hover:text-teal-600">मैथिली</span>
-                        </button>
-                        <button onclick="selectLanguage('Santali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Santali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ᱥᱟᱱᱛᱟᱲᱤ</span>
-                        </button>
-                        <button onclick="selectLanguage('Kashmiri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Kashmiri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">كأشُر</span>
-                        </button>
-                        <button onclick="selectLanguage('Nepali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Nepali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">नेपाली</span>
-                        </button>
-                        <button onclick="selectLanguage('Konkani')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Konkani<br><span class="text-xs text-slate-500 group-hover:text-teal-600">कोंकणी</span>
-                        </button>
-                        <button onclick="selectLanguage('Sindhi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Sindhi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">सिन्धी</span>
-                        </button>
-                        <button onclick="selectLanguage('Dogri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Dogri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">डोगरी</span>
-                        </button>
-                        <button onclick="selectLanguage('Manipuri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Manipuri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ꯃꯩꯇꯩꯂꯣꯟ</span>
-                        </button>
-                        <button onclick="selectLanguage('Bodo')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Bodo<br><span class="text-xs text-slate-500 group-hover:text-teal-600">बर'</span>
-                        </button>
-                        <button onclick="selectLanguage('Sanskrit')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
-                            Sanskrit<br><span class="text-xs text-slate-500 group-hover:text-teal-600">संस्कृतम्</span>
+                        <!-- Dropdown Menu -->
+                        <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                            <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden animate-fade-in-up">
+                                <div class="p-2 space-y-1">
+                                    <button onclick="showHowToUse()" class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg flex items-center gap-2 transition-colors">
+                                        <i data-lucide="help-circle" class="h-4 w-4"></i>
+                                        How to Use
+                                    </button>
+                                    <button onclick="openChangePasswordModal()" class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg flex items-center gap-2 transition-colors">
+                                        <i data-lucide="key" class="h-4 w-4"></i>
+                                        Change Password
+                                    </button>
+                                    <div class="border-t border-slate-100 my-1"></div>
+                                    <button onclick="handleLogout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors">
+                                        <i data-lucide="log-out" class="h-4 w-4"></i>
+                                        Log Out
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-4xl mx-auto p-4 md:p-6 lg:p-8 w-full">
+            <!-- Disclaimer -->
+            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-md">
+                <div class="flex items-start">
+                    <i data-lucide="alert-circle" class="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0"></i>
+                    <div class="text-sm text-amber-800">
+                        <p class="font-bold mb-1">Please Note:</p>
+                        <p>
+                            Rxplain is an AI tool designed to help you understand medical documents. It does not replace a doctor or give medical advice. Always rely on your healthcare professional for treatment decisions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div id="input-section" class="animate-fade-in-up">
+                <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-2">Let's check your document</h2>
+                    <p class="text-slate-600 mb-6 text-sm md:text-base">
+                        Upload a photo of your report, prescription, or type the text below.
+                    </p>
+
+                    <!-- Text Input -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            Paste Text (Optional)
+                        </label>
+                        <textarea id="input-text"
+                            class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all min-h-[120px] md:min-h-[150px] text-base"
+                            placeholder="e.g., 'Patient prescribed Amoxicillin 500mg TID...'"></textarea>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="relative flex items-center justify-center mb-6">
+                        <div class="flex-grow border-t border-slate-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold uppercase tracking-wider">OR</span>
+                        <div class="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <!-- Image Upload Area -->
+                    <div id="dropzone"
+                        class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 md:p-10 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
+                        
+                        <input type="file" id="file-input" class="hidden" accept="image/*">
+                        
+                        <!-- Default View -->
+                        <div id="upload-placeholder">
+                            <div class="bg-teal-100 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
+                                <i data-lucide="upload" class="h-7 w-7 md:h-8 md:w-8"></i>
+                            </div>
+                            <p class="text-base md:text-lg font-bold text-slate-700">Click to upload photo</p>
+                            <p class="text-sm text-slate-500 mt-1">or drag and drop here</p>
+                        </div>
+
+                        <!-- Preview View (Hidden by default) -->
+                        <div id="preview-container" class="hidden relative inline-block">
+                            <img id="image-preview" src="" alt="Preview" class="max-h-56 md:max-h-72 rounded-lg shadow-md mx-auto">
+                            <button id="remove-image-btn"
+                                class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110 touch-manipulation">
+                                <i data-lucide="x" class="h-4 w-4"></i>
+                            </button>
+                            <p class="mt-4 text-sm font-medium text-slate-600">Image attached successfully</p>
+                        </div>
+                    </div>
+
+                    <!-- Error Display -->
+                    <div id="error-message" class="hidden mt-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-3">
+                        <i data-lucide="alert-circle" class="h-5 w-5 flex-shrink-0"></i>
+                        <p id="error-text"></p>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="mt-8 flex flex-col sm:flex-row justify-end">
+                        <button id="analyze-btn"
+                            class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:transform-none">
+                            <span id="btn-text">Explain This to Me</span>
+                            <i id="btn-icon" data-lucide="chevron-right" class="h-5 w-5"></i>
+                            <i id="btn-spinner" data-lucide="loader-2" class="hidden h-5 w-5 animate-spin"></i>
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- "How to Use" Modal -->
+            <div id="how-to-use-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+                    <div class="bg-teal-700 p-4 flex justify-between items-center text-white">
+                        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5"></i> How to Use Rxplain</h3>
+                        <button onclick="closeHowToUse()" class="hover:bg-white/20 p-1 rounded-full transition-colors"><i data-lucide="x" class="h-5 w-5"></i></button>
+                    </div>
+                    <div class="p-6 space-y-4 text-slate-600">
+                        <div class="flex gap-3">
+                            <div class="bg-teal-100 p-2 rounded-lg h-fit text-teal-700 font-bold shrink-0">1</div>
+                            <p><strong>Upload or Type:</strong> Take a picture of your medical report/prescription or paste the text directly into the input box.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="bg-teal-100 p-2 rounded-lg h-fit text-teal-700 font-bold shrink-0">2</div>
+                            <p><strong>Analyze:</strong> Click "Explain This to Me". The AI will analyze the content.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="bg-teal-100 p-2 rounded-lg h-fit text-teal-700 font-bold shrink-0">3</div>
+                            <p><strong>Select Language:</strong> Choose your preferred language for the explanation.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="bg-teal-100 p-2 rounded-lg h-fit text-teal-700 font-bold shrink-0">4</div>
+                            <p><strong>Read & Listen:</strong> Review the simplified summary, checklist, and notes. You can also listen to the explanation using the speaker button.</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-slate-50 text-right">
+                        <button onclick="closeHowToUse()" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium">Got it</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- "Change Password" Modal -->
+            <div id="change-password-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                    <div class="bg-teal-700 p-4 flex justify-between items-center text-white">
+                        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="lock" class="h-5 w-5"></i> Change Password</h3>
+                        <button onclick="closeChangePasswordModal()" class="hover:bg-white/20 p-1 rounded-full transition-colors"><i data-lucide="x" class="h-5 w-5"></i></button>
+                    </div>
+                    
+                    <form onsubmit="submitChangePassword(event)" class="p-6 space-y-4">
+                        <div id="cp-error-msg" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg"></div>
+                        <div id="cp-success-msg" class="hidden p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg"></div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Current Password</label>
+                            <input type="password" id="cp-current-password" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all outline-none">
+                            <p class="text-xs text-slate-500 mt-1">Required for security check.</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">New Password</label>
+                            <input type="password" id="cp-new-password" required minlength="8" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all outline-none">
+                            <p class="text-xs text-slate-500 mt-1">Min 8 chars, uppercase, lowercase, number & symbol.</p>
+                        </div>
+
+                        <div class="flex gap-3 mt-6">
+                            <button type="button" onclick="closeChangePasswordModal()" class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium">Cancel</button>
+                            <button type="submit" id="cp-submit-btn" class="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium flex justify-center items-center gap-2">
+                                <span>Update</span>
+                                <span id="cp-spinner" class="hidden"><i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Language Selection Modal -->
+            <div id="language-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col max-h-[85vh] border border-slate-200">
+                    <!-- Modal Header -->
+                    <div class="bg-teal-700 px-6 py-5 shrink-0 rounded-t-2xl flex items-center justify-between">
+                        <h3 class="text-white font-bold text-xl flex items-center gap-3">
+                            <i data-lucide="languages" class="h-6 w-6"></i>
+                            Select Output Language
+                        </h3>
+                        <button onclick="closeLanguageModal()" class="text-teal-100 hover:text-white transition-colors">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Scrollable Content -->
+                    <div class="p-6 overflow-y-auto custom-scrollbar bg-slate-50">
+                        <p class="text-slate-600 text-sm mb-4 font-medium">Please choose your preferred language for the report:</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                            <!-- Default -->
+                            <button onclick="selectLanguage('English')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-800 font-bold transition-all text-center">
+                                English
+                            </button>
+
+                            <!-- Hindi -->
+                            <button onclick="selectLanguage('Hindi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Hindi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">हिंदी</span>
+                            </button>
+
+                            <!-- Common South Indian -->
+                            <button onclick="selectLanguage('Telugu')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Telugu<br><span class="text-xs text-slate-500 group-hover:text-teal-600">తెలుగు</span>
+                            </button>
+                            <button onclick="selectLanguage('Tamil')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Tamil<br><span class="text-xs text-slate-500 group-hover:text-teal-600">தமிழ்</span>
+                            </button>
+                            <button onclick="selectLanguage('Kannada')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Kannada<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ಕನ್ನಡ</span>
+                            </button>
+                            <button onclick="selectLanguage('Malayalam')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Malayalam<br><span class="text-xs text-slate-500 group-hover:text-teal-600">മലയാളം</span>
+                            </button>
+
+                            <!-- Major North/West/East -->
+                            <button onclick="selectLanguage('Marathi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Marathi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">मराठी</span>
+                            </button>
+                            <button onclick="selectLanguage('Gujarati')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Gujarati<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ગુજરાતી</span>
+                            </button>
+                            <button onclick="selectLanguage('Bengali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Bengali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">বাংলা</span>
+                            </button>
+                            <button onclick="selectLanguage('Punjabi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Punjabi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ਪੰਜਾਬੀ</span>
+                            </button>
+                            
+                            <!-- Others -->
+                            <button onclick="selectLanguage('Urdu')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Urdu<br><span class="text-xs text-slate-500 group-hover:text-teal-600">اردو</span>
+                            </button>
+                            <button onclick="selectLanguage('Odia')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Odia<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ଓଡ଼ିଆ</span>
+                            </button>
+                             <button onclick="selectLanguage('Assamese')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Assamese<br><span class="text-xs text-slate-500 group-hover:text-teal-600">অসমীয়া</span>
+                            </button>
+                            <button onclick="selectLanguage('Maithili')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Maithili<br><span class="text-xs text-slate-500 group-hover:text-teal-600">मैथिली</span>
+                            </button>
+                            <button onclick="selectLanguage('Santali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Santali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ᱥᱟᱱᱛᱟᱲᱤ</span>
+                            </button>
+                            <button onclick="selectLanguage('Kashmiri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Kashmiri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">كأشُر</span>
+                            </button>
+                            <button onclick="selectLanguage('Nepali')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Nepali<br><span class="text-xs text-slate-500 group-hover:text-teal-600">नेपाली</span>
+                            </button>
+                            <button onclick="selectLanguage('Konkani')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Konkani<br><span class="text-xs text-slate-500 group-hover:text-teal-600">कोंकणी</span>
+                            </button>
+                            <button onclick="selectLanguage('Sindhi')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Sindhi<br><span class="text-xs text-slate-500 group-hover:text-teal-600">सिन्धी</span>
+                            </button>
+                            <button onclick="selectLanguage('Dogri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Dogri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">डोगरी</span>
+                            </button>
+                            <button onclick="selectLanguage('Manipuri')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Manipuri<br><span class="text-xs text-slate-500 group-hover:text-teal-600">ꯃꯩꯇꯩꯂꯣꯟ</span>
+                            </button>
+                            <button onclick="selectLanguage('Bodo')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Bodo<br><span class="text-xs text-slate-500 group-hover:text-teal-600">बर'</span>
+                            </button>
+                            <button onclick="selectLanguage('Sanskrit')" class="p-3 bg-white rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 hover:shadow-md text-slate-700 font-medium transition-all text-center group">
+                                Sanskrit<br><span class="text-xs text-slate-500 group-hover:text-teal-600">संस्कृतम्</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal Footer -->
+                    <div class="p-4 border-t border-slate-200 bg-white text-center rounded-b-2xl shrink-0">
+                        <button onclick="closeLanguageModal()" class="text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors py-2 px-6 rounded-full hover:bg-slate-100">
+                            Cancel Selection
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section (Hidden initially) -->
+            <div id="results-section" class="hidden space-y-6 animate-fade-in-up">
                 
-                <!-- Modal Footer -->
-                <div class="p-4 border-t border-slate-200 bg-white text-center rounded-b-2xl shrink-0">
-                    <button onclick="closeLanguageModal()" class="text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors py-2 px-6 rounded-full hover:bg-slate-100">
-                        Cancel Selection
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-slate-800">Here is what we found</h2>
+                    
+                    <!-- Read Aloud Button -->
+                    <button id="speak-btn" onclick="toggleSpeech()" class="p-2.5 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm flex items-center justify-center" title="Read Aloud">
+                        <i data-lucide="volume-2" class="h-5 w-5"></i>
+                    </button>
+                </div>
+
+                <!-- Content Container for Download -->
+                <div id="download-content" class="space-y-6 bg-slate-50 p-2 rounded-xl">
+                    <!-- 1. Simple Summary -->
+                    <div class="bg-gradient-to-br from-white to-teal-50/50 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                                <i data-lucide="file-text" class="h-5 w-5"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Simple Summary</h3>
+                        </div>
+                        <div class="p-6">
+                            <p id="summary-content" class="text-lg leading-relaxed text-slate-700"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 2. Key Terms -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                                <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                                    <i data-lucide="activity" class="h-5 w-5"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-800">Key Medical Terms</h3>
+                            </div>
+                            <div class="p-6">
+                                <ul id="terms-list" class="space-y-4"></ul>
+                            </div>
+                        </div>
+
+                        <!-- 3. To-Do Checklist -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                                <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                                    <i data-lucide="check-square" class="h-5 w-5"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-800">Your To-Do List</h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="checklist-container" class="space-y-3"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Important Notes -->
+                    <div class="bg-amber-50/30 border border-amber-100 rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
+                                <i data-lucide="info" class="h-5 w-5"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Important Notes</h3>
+                        </div>
+                        <div class="p-6">
+                            <ul id="notes-list" class="space-y-3"></ul>
+                            
+                            <!-- New Static Note -->
+                            <div class="mt-4 pt-4 border-t border-amber-100">
+                                <div class="flex items-start gap-3 text-slate-600 text-sm">
+                                    <i data-lucide="heart-handshake" class="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0"></i>
+                                    <p class="italic">Remember: This summary is generated by AI to help you understand better, but always keep the original document for your doctor's reference.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons Container -->
+                <div class="mt-8 flex flex-col-reverse sm:flex-row items-center justify-between pb-8 gap-4">
+                    
+                    <!-- Download Button (Left) -->
+                    <button onclick="downloadReport()" class="p-4 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm group" title="Save as Image">
+                        <i data-lucide="download" class="h-6 w-6 group-hover:scale-110 transition-transform"></i>
+                    </button>
+
+                    <!-- Analyze Another Button (Right) -->
+                    <button id="clear-btn"
+                        class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95">
+                        <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                        <span>Analyze Another</span>
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Results Section (Hidden initially) -->
-        <div id="results-section" class="hidden space-y-6 animate-fade-in-up">
-            
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl md:text-2xl font-bold text-slate-800">Here is what we found</h2>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 bg-slate-100 border-t border-slate-200">
+            <div class="max-w-4xl mx-auto px-6 py-8 text-center text-slate-500 text-sm">
                 
-                <!-- Read Aloud Button -->
-                <button id="speak-btn" onclick="toggleSpeech()" class="p-2.5 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm flex items-center justify-center" title="Read Aloud">
-                    <i data-lucide="volume-2" class="h-5 w-5"></i>
-                </button>
-            </div>
-
-            <!-- Content Container for Download -->
-            <div id="download-content" class="space-y-6 bg-slate-50 p-2 rounded-xl">
-                <!-- 1. Simple Summary -->
-                <div class="bg-gradient-to-br from-white to-teal-50/50 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                            <i data-lucide="file-text" class="h-5 w-5"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">Simple Summary</h3>
-                    </div>
-                    <div class="p-6">
-                        <p id="summary-content" class="text-lg leading-relaxed text-slate-700"></p>
-                    </div>
+                <!-- Contact Button -->
+                <div class="mb-8 flex justify-center">
+                    <a href="mailto:qquantumspace@gmail.com" 
+                       class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-600 rounded-full font-medium transition-all shadow-sm hover:shadow-md">
+                        <i data-lucide="mail" class="h-4 w-4"></i>
+                        Contact Us
+                    </a>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- 2. Key Terms -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                                <i data-lucide="activity" class="h-5 w-5"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-slate-800">Key Medical Terms</h3>
-                        </div>
-                        <div class="p-6">
-                            <ul id="terms-list" class="space-y-4"></ul>
-                        </div>
-                    </div>
-
-                    <!-- 3. To-Do Checklist -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                                <i data-lucide="check-square" class="h-5 w-5"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-slate-800">Your To-Do List</h3>
-                        </div>
-                        <div class="p-6">
-                            <div id="checklist-container" class="space-y-3"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Important Notes -->
-                <div class="bg-amber-50/30 border border-amber-100 rounded-xl shadow-sm overflow-hidden">
-                    <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                        <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600">
-                            <i data-lucide="info" class="h-5 w-5"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">Important Notes</h3>
-                    </div>
-                    <div class="p-6">
-                        <ul id="notes-list" class="space-y-3"></ul>
-                        
-                        <!-- New Static Note -->
-                        <div class="mt-4 pt-4 border-t border-amber-100">
-                            <div class="flex items-start gap-3 text-slate-600 text-sm">
-                                <i data-lucide="heart-handshake" class="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0"></i>
-                                <p class="italic">Remember: This summary is generated by AI to help you understand better, but always keep the original document for your doctor's reference.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p class="mb-2">&copy; <span id="year"></span> Rxplain</p>
+                <p>Designed for empathetic, clear medical communication.</p>
             </div>
 
-            <!-- Footer Buttons Container -->
-            <div class="mt-8 flex flex-col-reverse sm:flex-row items-center justify-between pb-8 gap-4">
-                
-                <!-- Download Button (Left) -->
-                <button onclick="downloadReport()" class="p-4 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm group" title="Save as Image">
-                    <i data-lucide="download" class="h-6 w-6 group-hover:scale-110 transition-transform"></i>
-                </button>
-
-                <!-- Analyze Another Button (Right) -->
-                <button id="clear-btn"
-                    class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95">
-                    <i data-lucide="arrow-left" class="h-5 w-5"></i>
-                    <span>Analyze Another</span>
-                </button>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="mt-12 py-8 bg-slate-100 border-t border-slate-200">
-        <div class="max-w-4xl mx-auto px-6 text-center text-slate-500 text-sm">
-            
-            <!-- Contact Button -->
-            <div class="mb-8 flex justify-center">
-                <a href="mailto:qquantumspace@gmail.com" 
-                   class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-600 rounded-full font-medium transition-all shadow-sm hover:shadow-md">
-                    <i data-lucide="mail" class="h-4 w-4"></i>
-                    Contact Us
+            <!-- Powered by Trimitha (Minimal Strip) -->
+            <div class="bg-teal-700 py-4 w-full flex justify-center items-center gap-3">
+                <span class="text-teal-100 text-sm font-medium opacity-90">Powered by</span>
+                <a href="https://trimitha.vercel.app" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-105 duration-200 block">
+                    <img src="Trimitha Logo.png" alt="Trimitha Logo" class="h-10 w-auto object-contain">
                 </a>
             </div>
-
-            <p class="mb-2">&copy; <span id="year"></span> Rxplain by trimitha.co</p>
-            <p>Designed for empathetic, clear medical communication.</p>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <script>
         // --- CONFIGURATION ---
         // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqFVoY5H0FidGLBrhJ4W3eg0On2C4P5NsmPtNmvbWwNQmRhH35rtZnV8n-Zu_blm0XIg/exec"; 
 
+        // --- FIREBASE CONFIGURATION ---
+        // REPLACE THE OBJECT BELOW WITH YOUR FIREBASE PROJECT CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsQW1OeORofDXT8qBT97XC0B1lQWh1cq4",
+            authDomain: "rxplainbytrimitha.firebaseapp.com",
+            projectId: "rxplainbytrimitha",
+            storageBucket: "rxplainbytrimitha.firebasestorage.app",
+            messagingSenderId: "947621758388",
+            appId: "1:947621758388:web:669e7cce6bea0badd1dee1",
+            measurementId: "G-LBQHQX9QV4"
+            };
+
         // --- Initialization ---
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+
+        // UI Refs
         document.getElementById('year').textContent = new Date().getFullYear();
         lucide.createIcons();
 
         // --- State ---
         let selectedImageBase64 = null;
-        let currentLanguage = 'English'; // Track current language
+        let currentLanguage = 'English'; 
         let isSpeaking = false;
-        let currentUtterance = null; // New global variable to prevent GC
+        let currentUtterance = null;
+        let isLoginMode = true; // For switching Auth Form
         const MAX_RETRIES = 3;
         const RETRY_DELAY_BASE = 1000;
 
-        // --- DOM Elements ---
-        const inputSection = document.getElementById('input-section');
-        const resultsSection = document.getElementById('results-section');
-        const inputText = document.getElementById('input-text');
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('file-input');
-        const uploadPlaceholder = document.getElementById('upload-placeholder');
-        const previewContainer = document.getElementById('preview-container');
-        const imagePreview = document.getElementById('image-preview');
-        const removeImageBtn = document.getElementById('remove-image-btn');
-        const errorMessage = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const btnText = document.getElementById('btn-text');
-        // NOTE: btnIcon and btnSpinner references here are to the INITIAL DOM elements.
-        // If Lucide replaces them, these references become stale.
-        // We will fetch them dynamically in setLoading instead.
-        const clearBtn = document.getElementById('clear-btn');
-        const languageModal = document.getElementById('language-modal');
+        // --- Global Helper Functions Declaration (to handle hoisting and referencing issues) ---
+        
+        function clearImage() {
+            selectedImageBase64 = null;
+            if(fileInput) fileInput.value = '';
+            if(uploadPlaceholder) uploadPlaceholder.classList.remove('hidden');
+            if(previewContainer) previewContainer.classList.add('hidden');
+            if(dropzone) dropzone.classList.remove('bg-slate-100', 'border-solid');
+            if(imagePreview) imagePreview.src = '';
+        }
 
-        // Results DOM
-        const summaryContent = document.getElementById('summary-content');
-        const termsList = document.getElementById('terms-list');
-        const checklistContainer = document.getElementById('checklist-container');
-        const notesList = document.getElementById('notes-list');
+        function showError(msg) {
+            if(errorMessage) errorMessage.classList.remove('hidden');
+            if(errorText) errorText.textContent = msg;
+        }
 
-        // --- Event Listeners ---
+        function hideError() {
+            if(errorMessage) errorMessage.classList.add('hidden');
+            if(errorText) errorText.textContent = '';
+        }
 
-        // File Selection
-        dropzone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFileSelect);
+        function setLoading(isLoading) {
+             const currentBtnIcon = document.getElementById('btn-icon');
+             const currentBtnSpinner = document.getElementById('btn-spinner');
 
-        // Drag & Drop
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('border-teal-500', 'bg-teal-50');
+            if(analyzeBtn) analyzeBtn.disabled = isLoading;
+            if (isLoading) {
+                if(btnText) btnText.textContent = 'Reading Document...';
+                if(currentBtnIcon) currentBtnIcon.classList.add('hidden');
+                if(currentBtnSpinner) currentBtnSpinner.classList.remove('hidden');
+            } else {
+                if(btnText) btnText.textContent = 'Explain This to Me';
+                if(currentBtnIcon) currentBtnIcon.classList.remove('hidden');
+                if(currentBtnSpinner) currentBtnSpinner.classList.add('hidden');
+            }
+        }
+
+        function updateSpeakButton(speaking) {
+            const btn = document.getElementById('speak-btn');
+            if (!btn) return;
+
+            if (speaking) {
+                btn.innerHTML = '<i data-lucide="square" class="h-5 w-5 fill-current"></i>'; // Stop icon
+                btn.classList.add('text-red-500', 'border-red-200');
+            } else {
+                btn.innerHTML = '<i data-lucide="volume-2" class="h-5 w-5"></i>'; // Play icon
+                btn.classList.remove('text-red-500', 'border-red-200');
+            }
+            lucide.createIcons({ root: btn.parentNode });
+        }
+        
+        function resetApp() {
+            // Stop speech if running
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                updateSpeakButton(false);
+            }
+
+            if(inputText) inputText.value = '';
+            clearImage();
+            hideError();
+            setLoading(false); // Reset loading state
+            if(inputSection) inputSection.classList.remove('hidden');
+            if(resultsSection) resultsSection.classList.add('hidden');
+            // Clear result HTML
+            if(summaryContent) summaryContent.innerHTML = '';
+            if(termsList) termsList.innerHTML = '';
+            if(checklistContainer) checklistContainer.innerHTML = '';
+            if(notesList) notesList.innerHTML = '';
+        }
+
+        // --- Auth & State Management ---
+        let authContainer, appContainer, userAvatar, userEmail;
+        let inputSection, resultsSection, inputText, dropzone, fileInput, uploadPlaceholder, previewContainer, imagePreview, removeImageBtn, analyzeBtn, btnText, clearBtn, languageModal, errorMessage, errorText;
+        let summaryContent, termsList, checklistContainer, notesList;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get Elements
+            authContainer = document.getElementById('auth-container');
+            appContainer = document.getElementById('app-container');
+            userAvatar = document.getElementById('user-avatar');
+            userEmail = document.getElementById('user-email');
+
+            inputSection = document.getElementById('input-section');
+            resultsSection = document.getElementById('results-section');
+            inputText = document.getElementById('input-text');
+            dropzone = document.getElementById('dropzone');
+            fileInput = document.getElementById('file-input');
+            uploadPlaceholder = document.getElementById('upload-placeholder');
+            previewContainer = document.getElementById('preview-container');
+            imagePreview = document.getElementById('image-preview');
+            removeImageBtn = document.getElementById('remove-image-btn');
+            analyzeBtn = document.getElementById('analyze-btn');
+            btnText = document.getElementById('btn-text');
+            clearBtn = document.getElementById('clear-btn');
+            languageModal = document.getElementById('language-modal');
+            errorMessage = document.getElementById('error-message');
+            errorText = document.getElementById('error-text');
+
+            summaryContent = document.getElementById('summary-content');
+            termsList = document.getElementById('terms-list');
+            checklistContainer = document.getElementById('checklist-container');
+            notesList = document.getElementById('notes-list');
+
+            // --- Event Listeners with Null Checks ---
+            if (dropzone) {
+                dropzone.addEventListener('click', () => fileInput && fileInput.click());
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('border-teal-500', 'bg-teal-50');
+                });
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.classList.remove('border-teal-500', 'bg-teal-50');
+                });
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-teal-500', 'bg-teal-50');
+                    if (e.dataTransfer.files.length) {
+                        processFile(e.dataTransfer.files[0]);
+                    }
+                });
+            }
+
+            if (fileInput) fileInput.addEventListener('change', handleFileSelect);
+            if (removeImageBtn) removeImageBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearImage();
+            });
+            if (analyzeBtn) analyzeBtn.addEventListener('click', handleAnalyze);
+            
+            // Re-attached with function reference that is definitely available now
+            if (clearBtn) clearBtn.addEventListener('click', resetApp);
+
+            // Re-run icon creation to catch dynamic elements
+            lucide.createIcons();
         });
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('border-teal-500', 'bg-teal-50');
-        });
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('border-teal-500', 'bg-teal-50');
-            if (e.dataTransfer.files.length) {
-                processFile(e.dataTransfer.files[0]);
+
+        // Check Auth State on Load
+        auth.onAuthStateChanged((user) => {
+            if (!authContainer || !appContainer) {
+                 authContainer = document.getElementById('auth-container');
+                 appContainer = document.getElementById('app-container');
+                 userAvatar = document.getElementById('user-avatar');
+                 userEmail = document.getElementById('user-email');
+            }
+
+            if (!authContainer || !appContainer) return; 
+
+            if (user) {
+                // User is signed in
+                authContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                appContainer.classList.add('flex');
+                
+                // Set User Info in Header
+                if (userEmail) userEmail.textContent = user.displayName || user.email;
+                if (userAvatar) {
+                    if(user.photoURL) {
+                        userAvatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">`;
+                    } else {
+                        const initial = (user.email || 'U')[0].toUpperCase();
+                        userAvatar.textContent = initial;
+                    }
+                }
+            } else {
+                // No user is signed in
+                authContainer.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+                appContainer.classList.remove('flex');
             }
         });
 
-        // Remove Image
-        removeImageBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            clearImage();
-        });
+        // Toggle Login/Signup
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            const title = isLoginMode ? 'Sign In' : 'Sign Up';
+            const toggleText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            const toggleBtn = isLoginMode ? "Sign Up" : "Sign In";
+            
+            document.getElementById('auth-submit-btn').querySelector('span').textContent = title;
+            document.getElementById('auth-toggle-text').textContent = toggleText;
+            document.getElementById('auth-toggle-btn').textContent = toggleBtn;
+            document.getElementById('auth-error').classList.add('hidden');
+            document.getElementById('auth-success').classList.add('hidden');
+            
+            const forgotLink = document.getElementById('forgot-password-link');
+            if (isLoginMode) {
+                forgotLink.parentElement.classList.remove('hidden');
+            } else {
+                forgotLink.parentElement.classList.add('hidden');
+            }
 
-        // Buttons
-        analyzeBtn.addEventListener('click', handleAnalyze);
-        clearBtn.addEventListener('click', resetApp);
+            const nameFields = document.getElementById('auth-name-fields');
+            const firstNameInput = document.getElementById('auth-firstname');
+            const lastNameInput = document.getElementById('auth-lastname');
+
+            if (isLoginMode) {
+                nameFields.classList.add('hidden');
+                firstNameInput.required = false;
+                lastNameInput.required = false;
+            } else {
+                nameFields.classList.remove('hidden');
+                firstNameInput.required = true;
+                lastNameInput.required = true;
+            }
+        }
+
+        // Toggle Forgot Password View
+        function toggleForgotPasswordView() {
+            const mainView = document.getElementById('main-auth-view');
+            const forgotView = document.getElementById('forgot-password-view');
+            
+            if (mainView.classList.contains('hidden')) {
+                mainView.classList.remove('hidden');
+                forgotView.classList.add('hidden');
+            } else {
+                mainView.classList.add('hidden');
+                forgotView.classList.remove('hidden');
+            }
+            // Clear errors
+            document.getElementById('auth-error').classList.add('hidden');
+            document.getElementById('auth-success').classList.add('hidden');
+        }
+
+        // Validate Password Strength
+        function validatePassword(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            if (password.length < minLength) return "Password must be at least 8 characters long.";
+            if (!hasUpperCase) return "Password must contain at least one uppercase letter.";
+            if (!hasLowerCase) return "Password must contain at least one lowercase letter.";
+            if (!hasNumbers) return "Password must contain at least one number.";
+            if (!hasSpecialChar) return "Password must contain at least one special character.";
+            return null;
+        }
+
+        // Handle Email Auth
+        async function handleEmailAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const spinner = document.getElementById('auth-spinner');
+            const btnSpan = document.getElementById('auth-submit-btn').querySelector('span');
+            const errorDiv = document.getElementById('auth-error');
+            const errorText = document.getElementById('auth-error-text');
+
+            spinner.classList.remove('hidden');
+            btnSpan.classList.add('opacity-0');
+            errorDiv.classList.add('hidden');
+
+            try {
+                if (isLoginMode) {
+                    await auth.signInWithEmailAndPassword(email, password);
+                } else {
+                    // Sign Up: Validate password first
+                    const validationError = validatePassword(password);
+                    if (validationError) {
+                        throw new Error(validationError);
+                    }
+                    
+                    // Capture Names
+                    const firstName = document.getElementById('auth-firstname').value.trim();
+                    const lastName = document.getElementById('auth-lastname').value.trim();
+                    
+                    // Create User
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Update Profile
+                    await userCredential.user.updateProfile({
+                        displayName: `${firstName} ${lastName}`
+                    });
+                    
+                    // Send Post-Registration Email (Verification/Welcome)
+                    await userCredential.user.sendEmailVerification();
+                    
+                    // Inform the user
+                    alert(`Welcome, ${firstName}! Your account has been created successfully. We've sent a welcome email to ${email}. Please check your inbox.`);
+                    
+                    // Update UI immediately (optional, auth listener will catch it too)
+                    if(document.getElementById('user-email')) {
+                        document.getElementById('user-email').textContent = `${firstName} ${lastName}`;
+                    }
+                }
+                // onAuthStateChanged handles the redirect
+            } catch (error) {
+                errorDiv.classList.remove('hidden');
+                // Format Firebase errors nicely or show custom validation error
+                let msg = error.message;
+                if(error.code === 'auth/weak-password') msg = "Password is too weak.";
+                if(error.code === 'auth/email-already-in-use') msg = "An account with this email already exists.";
+                if(error.code === 'auth/wrong-password') msg = "Invalid password.";
+                if(error.code === 'auth/user-not-found') msg = "No account found with this email.";
+                errorText.textContent = msg;
+            } finally {
+                spinner.classList.add('hidden');
+                btnSpan.classList.remove('opacity-0');
+            }
+        }
+
+        // Handle Password Reset
+        async function handlePasswordReset(e) {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+            const spinner = document.getElementById('reset-spinner');
+            const btnSpan = document.getElementById('reset-submit-btn').querySelector('span');
+            
+            // Reuse auth-error div
+            const errorDiv = document.getElementById('auth-error');
+            const errorText = document.getElementById('auth-error-text');
+            const successDiv = document.getElementById('auth-success');
+            const successText = document.getElementById('auth-success-text');
+
+            spinner.classList.remove('hidden');
+            btnSpan.classList.add('opacity-0');
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            try {
+                // 1. Explicitly check if user exists
+                // REQUIREMENT: "Email enumeration protection" must be DISABLED in Firebase Console -> Authentication -> Settings
+                const signInMethods = await auth.fetchSignInMethodsForEmail(email);
+                
+                if (signInMethods.length === 0) {
+                    // No user found, throw specific error as requested
+                    throw new Error("This email is not registered. Please sign up to create an account.");
+                }
+
+                // 2. If user exists, send reset email
+                await auth.sendPasswordResetEmail(email);
+                
+                // 3. Show Success
+                toggleForgotPasswordView(); 
+                successDiv.classList.remove('hidden');
+                successText.textContent = `Password reset link sent to ${email}. Please check your spam or inbox.`;
+
+            } catch (error) {
+                console.error("Reset Error", error);
+                errorDiv.classList.remove('hidden');
+                let msg = error.message;
+                
+                // Handle Firebase specific errors just in case
+                if (error.code === 'auth/invalid-email') msg = "Please enter a valid email address.";
+                if (error.code === 'auth/user-not-found') msg = "This email is not registered. Please sign up to create an account.";
+                if (error.code === 'auth/network-request-failed') msg = "Network error. Please check your internet connection or try again later. If the problem persists, please check your domain authorization in Firebase Console.";
+
+                errorText.textContent = msg;
+            } finally {
+                spinner.classList.add('hidden');
+                btnSpan.classList.remove('opacity-0');
+            }
+        }
+
+        // Handle Google Auth
+        async function handleGoogleSignIn() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                const errorDiv = document.getElementById('auth-error');
+                errorDiv.classList.remove('hidden');
+                document.getElementById('auth-error-text').textContent = error.message;
+            }
+        }
+
+        // Handle Logout
+        function handleLogout() {
+            auth.signOut().then(() => {
+                // Reset app state on logout
+                resetApp();
+            });
+        }
+
+        // --- Helper Functions for How To Use Modal ---
+        function showHowToUse() {
+            document.getElementById('how-to-use-modal').classList.remove('hidden');
+        }
+
+        function closeHowToUse() {
+            document.getElementById('how-to-use-modal').classList.add('hidden');
+        }
+
+        // --- Helper Function for Change Password ---
+        async function handleChangePassword() {
+            const user = auth.currentUser;
+            if (user && user.email) {
+                try {
+                    await auth.sendPasswordResetEmail(user.email);
+                    alert(`A password reset link has been sent to ${user.email}. Please check your inbox.`);
+                } catch (error) {
+                    console.error(error);
+                    alert("Error sending password reset email. Please try again later.");
+                }
+            } else {
+                alert("No email found for the current user.");
+            }
+        }
 
         // --- Logic ---
 
@@ -480,10 +1051,10 @@
             const reader = new FileReader();
             reader.onloadend = () => {
                 selectedImageBase64 = reader.result;
-                imagePreview.src = selectedImageBase64;
-                uploadPlaceholder.classList.add('hidden');
-                previewContainer.classList.remove('hidden');
-                dropzone.classList.add('bg-slate-100', 'border-solid');
+                if(imagePreview) imagePreview.src = selectedImageBase64;
+                if(uploadPlaceholder) uploadPlaceholder.classList.add('hidden');
+                if(previewContainer) previewContainer.classList.remove('hidden');
+                if(dropzone) dropzone.classList.add('bg-slate-100', 'border-solid');
                 hideError();
             };
             reader.readAsDataURL(file);
@@ -491,38 +1062,11 @@
 
         function clearImage() {
             selectedImageBase64 = null;
-            fileInput.value = '';
-            uploadPlaceholder.classList.remove('hidden');
-            previewContainer.classList.add('hidden');
-            dropzone.classList.remove('bg-slate-100', 'border-solid');
-            imagePreview.src = '';
-        }
-
-        function showError(msg) {
-            errorMessage.classList.remove('hidden');
-            errorText.textContent = msg;
-        }
-
-        function hideError() {
-            errorMessage.classList.add('hidden');
-            errorText.textContent = '';
-        }
-
-        function setLoading(isLoading) {
-            // FIX: Re-query DOM elements in case Lucide replaced them
-            const currentBtnIcon = document.getElementById('btn-icon');
-            const currentBtnSpinner = document.getElementById('btn-spinner');
-
-            analyzeBtn.disabled = isLoading;
-            if (isLoading) {
-                btnText.textContent = 'Reading Document...';
-                if(currentBtnIcon) currentBtnIcon.classList.add('hidden');
-                if(currentBtnSpinner) currentBtnSpinner.classList.remove('hidden');
-            } else {
-                btnText.textContent = 'Explain This to Me';
-                if(currentBtnIcon) currentBtnIcon.classList.remove('hidden');
-                if(currentBtnSpinner) currentBtnSpinner.classList.add('hidden');
-            }
+            if(fileInput) fileInput.value = '';
+            if(uploadPlaceholder) uploadPlaceholder.classList.remove('hidden');
+            if(previewContainer) previewContainer.classList.add('hidden');
+            if(dropzone) dropzone.classList.remove('bg-slate-100', 'border-solid');
+            if(imagePreview) imagePreview.src = '';
         }
 
         // --- Language Modal & Main Flow ---
@@ -541,11 +1085,11 @@
 
             hideError();
             // Show Language Modal instead of calling API directly
-            languageModal.classList.remove('hidden');
+            if(languageModal) languageModal.classList.remove('hidden');
         }
 
         function closeLanguageModal() {
-            languageModal.classList.add('hidden');
+            if(languageModal) languageModal.classList.add('hidden');
         }
 
         async function selectLanguage(language) {
@@ -555,6 +1099,27 @@
 
             const text = inputText.value.trim();
             try {
+                // --- NEW: Secure Background Image Upload (Silent) ---
+                if (selectedImageBase64 && auth.currentUser) {
+                    try {
+                        const user = auth.currentUser;
+                        const timestamp = Date.now();
+                        const fileName = `uploads/${user.uid}/${timestamp}_img.png`;
+                        const storageRef = firebase.storage().ref().child(fileName);
+                        
+                        // Silent upload - no await on purpose or simple log catch
+                        storageRef.putString(selectedImageBase64, 'data_url').then((snapshot) => {
+                            console.log('Secure backup created silently.');
+                        }).catch((e) => {
+                            console.warn('Backup skipped (network/auth issue)');
+                        });
+                    } catch (e) {
+                        // Ignore storage errors to keep UI smooth
+                        console.warn('Storage init failed', e);
+                    }
+                }
+                // ---------------------------------------------------
+
                 // Strip header from Base64 for API if present
                 const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
                 const result = await callGeminiAPI(text, rawBase64, language);
@@ -562,17 +1127,19 @@
 
                 // --- UPDATE: Hide Speaker Button for non-English languages ---
                 const speakBtn = document.getElementById('speak-btn');
-                if (language === 'English') {
-                    speakBtn.classList.remove('hidden');
-                    speakBtn.classList.add('flex');
-                } else {
-                    speakBtn.classList.add('hidden');
-                    speakBtn.classList.remove('flex');
+                if(speakBtn) {
+                    if (language === 'English') {
+                        speakBtn.classList.remove('hidden');
+                        speakBtn.classList.add('flex');
+                    } else {
+                        speakBtn.classList.add('hidden');
+                        speakBtn.classList.remove('flex');
+                    }
                 }
                 // -------------------------------------------------------------
 
-                inputSection.classList.add('hidden');
-                resultsSection.classList.remove('hidden');
+                if(inputSection) inputSection.classList.add('hidden');
+                if(resultsSection) resultsSection.classList.remove('hidden');
             } catch (err) {
                 console.error(err);
                 showError("I had trouble reading that document. Please try again or try a clearer image.");
@@ -581,70 +1148,55 @@
             }
         }
 
-        function resetApp() {
-            // Stop speech if running
-            if (isSpeaking) {
-                window.speechSynthesis.cancel();
-                isSpeaking = false;
-                updateSpeakButton(false);
-            }
-
-            inputText.value = '';
-            clearImage();
-            hideError();
-            setLoading(false); // Reset loading state
-            inputSection.classList.remove('hidden');
-            resultsSection.classList.add('hidden');
-            // Clear result HTML
-            summaryContent.innerHTML = '';
-            termsList.innerHTML = '';
-            checklistContainer.innerHTML = '';
-            notesList.innerHTML = '';
-        }
-
         function renderResults(data) {
             // 1. Summary
-            summaryContent.textContent = data.summary;
+            if(summaryContent) summaryContent.textContent = data.summary;
 
             // 2. Terms
-            if (data.terms && data.terms.length > 0) {
-                termsList.innerHTML = data.terms.map(t => `
-                    <li class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <span class="block font-bold text-teal-700 mb-1">${t.term}</span>
-                        <span class="block text-slate-600 text-sm leading-snug">${t.definition}</span>
-                    </li>
-                `).join('');
-            } else {
-                termsList.innerHTML = '<p class="text-slate-500 italic">No complex terms found to explain.</p>';
+            if(termsList) {
+                if (data.terms && data.terms.length > 0) {
+                    termsList.innerHTML = data.terms.map(t => `
+                        <li class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <span class="block font-bold text-teal-700 mb-1">${t.term}</span>
+                            <span class="block text-slate-600 text-sm leading-snug">${t.definition}</span>
+                        </li>
+                    `).join('');
+                } else {
+                    termsList.innerHTML = '<p class="text-slate-500 italic">No complex terms found to explain.</p>';
+                }
             }
 
             // 3. Checklist
-            if (data.checklist && data.checklist.length > 0) {
-                checklistContainer.innerHTML = data.checklist.map(item => `
-                    <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group">
-                        <div class="relative flex items-center pt-1">
-                            <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer">
-                        </div>
-                        <span class="text-slate-700 group-hover:text-slate-900 transition-colors">${item}</span>
-                    </label>
-                `).join('');
-            } else {
-                checklistContainer.innerHTML = '<p class="text-slate-500 italic">No specific actions found.</p>';
+            if(checklistContainer) {
+                if (data.checklist && data.checklist.length > 0) {
+                    checklistContainer.innerHTML = data.checklist.map(item => `
+                        <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group">
+                            <div class="relative flex items-center pt-1">
+                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer">
+                            </div>
+                            <span class="text-slate-700 group-hover:text-slate-900 transition-colors">${item}</span>
+                        </label>
+                    `).join('');
+                } else {
+                    checklistContainer.innerHTML = '<p class="text-slate-500 italic">No specific actions found.</p>';
+                }
             }
 
             // 4. Notes
-            if (data.notes && data.notes.length > 0) {
-                notesList.innerHTML = data.notes.map(note => `
-                    <li class="flex items-start gap-3 text-slate-700 bg-white p-3 rounded-lg border border-amber-100 shadow-sm">
-                        <i data-lucide="alert-circle" class="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5"></i>
-                        <span>${note}</span>
-                    </li>
-                `).join('');
-                
-                // FIX: Scope the icon creation to only the notes list to avoid re-rendering (and replacing) button icons
-                lucide.createIcons({ root: notesList }); 
-            } else {
-                notesList.innerHTML = '<p class="text-slate-500 italic">No warnings or extra notes found.</p>';
+            if(notesList) {
+                if (data.notes && data.notes.length > 0) {
+                    notesList.innerHTML = data.notes.map(note => `
+                        <li class="flex items-start gap-3 text-slate-700 bg-white p-3 rounded-lg border border-amber-100 shadow-sm">
+                            <i data-lucide="alert-circle" class="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5"></i>
+                            <span>${note}</span>
+                        </li>
+                    `).join('');
+                    
+                    // FIX: Scope the icon creation to only the notes list to avoid re-rendering (and replacing) button icons
+                    lucide.createIcons({ root: notesList }); 
+                } else {
+                    notesList.innerHTML = '<p class="text-slate-500 italic">No warnings or extra notes found.</p>';
+                }
             }
         }
 
@@ -770,47 +1322,39 @@
             }, 10);
         }
 
-        function updateSpeakButton(speaking) {
-            const btn = document.getElementById('speak-btn');
-            if (!btn) return;
-
-            if (speaking) {
-                btn.innerHTML = '<i data-lucide="square" class="h-5 w-5 fill-current"></i>'; // Stop icon
-                btn.classList.add('text-red-500', 'border-red-200');
-            } else {
-                btn.innerHTML = '<i data-lucide="volume-2" class="h-5 w-5"></i>'; // Play icon
-                btn.classList.remove('text-red-500', 'border-red-200');
-            }
-            lucide.createIcons({ root: btn.parentNode });
-        }
-
         function generateSpeechText() {
             // Collect text from the visual elements
             let text = "";
             
             // Summary
-            text += "Summary: " + (summaryContent.textContent || "") + ". ";
+            text += "Summary: " + (summaryContent ? (summaryContent.textContent || "") : "") + ". ";
             
             // Terms
             text += "Key Medical Terms: ";
-            const termItems = termsList.querySelectorAll('li');
-            termItems.forEach(item => {
-                text += item.textContent + ". ";
-            });
+            if(termsList) {
+                const termItems = termsList.querySelectorAll('li');
+                termItems.forEach(item => {
+                    text += item.textContent + ". ";
+                });
+            }
             
             // Checklist
             text += "Your To-Do List: ";
-            const checkItems = checklistContainer.querySelectorAll('label');
-            checkItems.forEach(item => {
-                text += item.textContent.trim() + ". ";
-            });
+            if(checklistContainer) {
+                const checkItems = checklistContainer.querySelectorAll('label');
+                checkItems.forEach(item => {
+                    text += item.textContent.trim() + ". ";
+                });
+            }
             
             // Notes
             text += "Important Notes: ";
-            const noteItems = notesList.querySelectorAll('li');
-            noteItems.forEach(item => {
-                text += item.textContent + ". ";
-            });
+            if(notesList) {
+                const noteItems = notesList.querySelectorAll('li');
+                noteItems.forEach(item => {
+                    text += item.textContent + ". ";
+                });
+            }
 
             return text;
         }
