@@ -168,12 +168,13 @@
                         <div class="flex-grow border-t border-slate-200"></div><span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold uppercase tracking-wider">OR</span><div class="flex-grow border-t border-slate-200"></div>
                     </div>
                     <div id="dropzone" class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 md:p-10 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
-                        <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        <!-- FIX: Ensure input is clickable but visually hidden -->
+                        <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
                         <div id="upload-placeholder">
                             <div class="bg-teal-100 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600"><i data-lucide="upload" class="h-7 w-7 md:h-8 md:w-8"></i></div>
                             <p class="text-base md:text-lg font-bold text-slate-700">Click to upload photo</p><p class="text-sm text-slate-500 mt-1">or drag and drop here</p>
                         </div>
-                        <div id="preview-container" class="hidden relative inline-block z-10 pointer-events-none">
+                        <div id="preview-container" class="hidden relative inline-block z-20 pointer-events-none">
                             <img id="image-preview" src="" alt="Preview" class="max-h-56 md:max-h-72 rounded-lg shadow-md mx-auto pointer-events-auto">
                             <button id="remove-image-btn" class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110 touch-manipulation pointer-events-auto"><i data-lucide="x" class="h-4 w-4"></i></button>
                             <p class="mt-4 text-sm font-medium text-slate-600">Image attached successfully</p>
@@ -424,7 +425,6 @@
             const errorText = document.getElementById('auth-error-text');
 
             if(spinner) spinner.classList.remove('hidden');
-            // FIX: Use 'hidden' instead of 'opacity-0' to remove text from flow and center spinner
             if(btnSpan) btnSpan.classList.add('hidden');
             if(errorDiv) errorDiv.classList.add('hidden');
 
@@ -452,7 +452,6 @@
                 if(errorText) errorText.textContent = msg;
             } finally {
                 if(spinner) spinner.classList.add('hidden');
-                // FIX: Restore visibility
                 if(btnSpan) btnSpan.classList.remove('hidden');
             }
         }
@@ -468,7 +467,6 @@
             const successText = document.getElementById('auth-success-text');
 
             if(spinner) spinner.classList.remove('hidden');
-            // FIX: Use 'hidden' instead of 'opacity-0' to remove text from flow and center spinner
             if(btnSpan) btnSpan.classList.add('hidden');
             if(errorDiv) errorDiv.classList.add('hidden');
             if(successDiv) successDiv.classList.add('hidden');
@@ -490,7 +488,6 @@
                 if(errorText) errorText.textContent = msg;
             } finally {
                 if(spinner) spinner.classList.add('hidden');
-                // FIX: Restore visibility
                 if(btnSpan) btnSpan.classList.remove('hidden');
             }
         }
