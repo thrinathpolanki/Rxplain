@@ -494,25 +494,29 @@
 
         async function handleGoogleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
             try {
-                if (isMobile) await auth.signInWithRedirect(provider); else await auth.signInWithPopup(provider);
-            } catch (error) {
-                if (error.code === 'auth/operation-not-supported-in-this-environment' && isMobile) {
-                    try {
-                        await auth.signInWithPopup(provider);
-                        return;
-                    } catch (popupError) {
-                        error = popupError;
-                    }
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                       // REQUIRED for mobile
+                    await auth.signInWithRedirect(provider);
+                } else {
+                    // OK for desktop
+                    await auth.signInWithPopup(provider);
                 }
-
+            } catch (error) {
                 const errorDiv = document.getElementById('auth-error');
-                if(errorDiv) errorDiv.classList.remove('hidden');
                 const errorText = document.getElementById('auth-error-text');
-                if(errorText) {
-                    if (error.code === 'auth/unauthorized-domain') errorText.innerHTML = `<strong>Domain Not Authorized:</strong> Please add <code>${window.location.hostname}</code> to your Firebase Console.`;
-                    else errorText.textContent = error.message;
+
+                if (errorDiv) errorDiv.classList.remove('hidden');
+
+                if (errorText) {
+                    if (error.code === 'auth/unauthorized-domain') {
+                        errorText.innerHTML =`<strong>Domain Not Authorized:</strong> Add <code>${window.location.hostname}</code> in Firebase Console.`;
+                    } else {
+                        errorText.textContent = error.message;
+                    }
                 }
             }
         }
