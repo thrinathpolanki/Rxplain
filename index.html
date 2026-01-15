@@ -168,12 +168,13 @@
                         <div class="flex-grow border-t border-slate-200"></div><span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold uppercase tracking-wider">OR</span><div class="flex-grow border-t border-slate-200"></div>
                     </div>
                     <div id="dropzone" class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 md:p-10 text-center transition-all cursor-pointer hover:border-teal-400 hover:bg-slate-50 bg-slate-50/50">
-                        <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        <!-- FIX: Use z-10 and make sure it covers fully. Removed redundant event listeners in JS -->
+                        <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
                         <div id="upload-placeholder">
                             <div class="bg-teal-100 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600"><i data-lucide="upload" class="h-7 w-7 md:h-8 md:w-8"></i></div>
                             <p class="text-base md:text-lg font-bold text-slate-700">Click to upload photo</p><p class="text-sm text-slate-500 mt-1">or drag and drop here</p>
                         </div>
-                        <div id="preview-container" class="hidden relative inline-block z-10 pointer-events-none">
+                        <div id="preview-container" class="hidden relative inline-block z-20 pointer-events-none">
                             <img id="image-preview" src="" alt="Preview" class="max-h-56 md:max-h-72 rounded-lg shadow-md mx-auto pointer-events-auto">
                             <button id="remove-image-btn" class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-sm transition-transform hover:scale-110 touch-manipulation pointer-events-auto"><i data-lucide="x" class="h-4 w-4"></i></button>
                             <p class="mt-4 text-sm font-medium text-slate-600">Image attached successfully</p>
@@ -340,13 +341,19 @@
             notesList = document.getElementById('notes-list');
 
             if (dropzone) {
-                dropzone.addEventListener('click', () => fileInput && fileInput.click());
+                // REMOVED CLICK LISTENER ON DROPZONE to fix double trigger issue
+                // dropzone.addEventListener('click', ...); 
                 dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('border-teal-500', 'bg-teal-50'); });
                 dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('border-teal-500', 'bg-teal-50'); });
                 dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('border-teal-500', 'bg-teal-50'); if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]); });
             }
 
-            if (fileInput) fileInput.addEventListener('change', handleFileSelect);
+            // ADDED: Reset input value on click so 'change' event fires even if same file selected
+            if (fileInput) {
+                fileInput.addEventListener('click', (e) => { e.target.value = null; });
+                fileInput.addEventListener('change', handleFileSelect);
+            }
+
             if (removeImageBtn) removeImageBtn.addEventListener('click', (e) => { e.stopPropagation(); clearImage(); });
             if (analyzeBtn) analyzeBtn.addEventListener('click', handleAnalyze);
             if (clearBtn) clearBtn.addEventListener('click', resetApp);
@@ -493,10 +500,19 @@
 
         async function handleGoogleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // Force popup always to fix mobile redirect loops in sandboxed environments
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             try {
-                await auth.signInWithPopup(provider);
+                if (isMobile) await auth.signInWithRedirect(provider); else await auth.signInWithPopup(provider);
             } catch (error) {
+                if (error.code === 'auth/operation-not-supported-in-this-environment' && isMobile) {
+                    try {
+                        await auth.signInWithPopup(provider);
+                        return;
+                    } catch (popupError) {
+                        error = popupError;
+                    }
+                }
+
                 const errorDiv = document.getElementById('auth-error');
                 if(errorDiv) errorDiv.classList.remove('hidden');
                 const errorText = document.getElementById('auth-error-text');
