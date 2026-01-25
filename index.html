@@ -7,6 +7,9 @@
     
     <meta name="description" content="Rxplain helps patients understand medical prescriptions, tablets, injections, syrups, dosage instructions, and usage in simple language." />
     <meta name="keywords" content="medical prescription explanation, tablet meaning, injection usage, syrup dosage, prescription guide" />
+    <meta name="description" content="Rxplain is an AI-powered tool that explains medical prescriptions in simple language across multiple languages." />
+    <meta name="author" content="Trimitha" />
+    <link rel="icon" type="image/png" href="Rxplain Logo.png" />
 
     <script type="application/ld+json">
     {
@@ -14,7 +17,21 @@
       "@type": "MedicalWebPage",
       "name": "Rxplain",
       "description": "A platform to explain medical prescriptions, medicines, dosage, and usage in simple terms.",
-      "url": "https://rxplain.vercel.app"
+      "url": "https://rxplain.vercel.app",
+      "sameAs": [
+        "https://www.linkedin.com/company/trimitha",
+        "https://twitter.com/trimithacompany",
+        "https://www.instagram.com/trimitha.co"
+      ],
+      "applicationCategory": "HealthApplication",
+      "genre": "Medical Information",
+      "offeredBy": {
+        "@type": "Organization",
+        "name": "Trimitha",
+        "url": "https://trimitha.co.in"
+      },
+      "operatingSystem": "All"
+
     }
     </script>
 
@@ -81,8 +98,23 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
 
+    <!-- INTRO SPLASH SCREEN -->
+    <div id="splash-screen" class="fixed inset-0 z-[100] bg-gradient-to-br from-teal-50 via-white to-teal-100 flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
+        <div class="text-center animate-fade-in-up">
+            <div class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border border-teal-100">
+                <i data-lucide="heart" class="h-12 w-12 text-teal-600 fill-current"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-2 tracking-tight">Rxplain</h1>
+            <p class="text-slate-500 text-lg font-medium">Making Medical Terms Simple</p>
+        </div>
+        <div class="absolute bottom-12 flex flex-col items-center animate-fade-in-up" style="animation-delay: 0.2s; animation-fill-mode: backwards;">
+            <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-3">Powered by</span>
+            <a href="https://trimitha.co.in" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-105 duration-200 block"><img src="Trimitha Logo.png" alt="Trimitha Logo" class="h-10 w-auto object-contain"></a>
+        </div>
+    </div>
+
     <!-- AUTHENTICATION SECTION -->
-    <div id="auth-container" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div id="auth-container" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4 overflow-y-auto hidden"> <!-- Initially hidden to let splash play -->
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 animate-fade-in-up my-auto">
             
             <!-- Auth Header -->
@@ -376,16 +408,43 @@
                         <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="file-text" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Simple Summary</h3></div>
                         <div class="p-6"><p id="summary-content" class="text-lg leading-relaxed text-slate-700"></p></div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="activity" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Key Medical Terms</h3></div>
-                            <div class="p-6"><ul id="terms-list" class="space-y-4"></ul></div>
+
+                    <!-- Medicines Guide -->
+                    <div id="medicines-container" class="space-y-4"></div>
+
+                    <!-- Dosage Table -->
+                    <div id="dosage-table-container" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
+                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="calendar-clock" class="h-5 w-5"></i></div>
+                            <h3 class="text-lg font-bold text-slate-800">Dosage Schedule</h3>
                         </div>
+                        <div id="dosage-content-area" class="p-4 md:p-6">
+                            <!-- Content injected via JS: Mobile Cards or Desktop Table -->
+                        </div>
+                    </div>
+
+                    <!-- Critical Warnings -->
+                    <div id="critical-warnings-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden"></div>
+
+                    <!-- Diagnosis & Terms -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="activity" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Diagnosis & Medical Terms</h3></div>
+                        <div class="p-6"><ul id="terms-list" class="space-y-4"></ul></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="check-square" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Your To-Do List</h3></div>
                             <div class="p-6"><div id="checklist-container" class="space-y-3"></div></div>
                         </div>
+                        
+                        <!-- Follow Up -->
+                        <div id="follow-up-container" class="bg-blue-50/50 rounded-xl shadow-sm border border-blue-100 overflow-hidden hidden">
+                            <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="calendar" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Follow Up</h3></div>
+                            <div class="p-6"><p id="follow-up-text" class="text-slate-700 leading-relaxed"></p></div>
+                        </div>
                     </div>
+
                     <div class="bg-amber-50/30 border border-amber-100 rounded-xl shadow-sm overflow-hidden">
                         <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="info" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Important Notes</h3></div>
                         <div class="p-6"><ul id="notes-list" class="space-y-3"></ul><div class="mt-4 pt-4 border-t border-amber-100"><div class="flex items-start gap-3 text-slate-600 text-sm"><i data-lucide="heart-handshake" class="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0"></i><p class="italic">Remember: This summary is generated by AI to help you understand better, but always keep the original document for your doctor's reference.</p></div></div></div>
@@ -449,6 +508,18 @@
         let authContainer, appContainer, userAvatar, userEmail, inputSection, resultsSection, inputText, dropzone, fileInput, uploadPlaceholder, previewContainer, imagePreview, removeImageBtn, analyzeBtn, btnText, clearBtn, languageModal, errorMessage, errorText, summaryContent, termsList, checklistContainer, notesList, onboardingModal;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Splash Screen Logic
+            const splashScreen = document.getElementById('splash-screen');
+            setTimeout(() => {
+                splashScreen.classList.add('opacity-0', 'pointer-events-none');
+                
+                // Show auth container if not logged in (auth listener handles logic, but we ensure visibility here)
+                // The actual visibility toggle is handled by onAuthStateChanged, but we ensure smooth transition
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                }, 700); // Wait for opacity transition
+            }, 2500); // Show splash for 2.5 seconds
+
             authContainer = document.getElementById('auth-container');
             appContainer = document.getElementById('app-container');
             userAvatar = document.getElementById('user-avatar');
@@ -519,12 +590,23 @@
         auth.onAuthStateChanged((user) => {
             if (!authContainer || !appContainer) { authContainer = document.getElementById('auth-container'); appContainer = document.getElementById('app-container'); userAvatar = document.getElementById('user-avatar'); userEmail = document.getElementById('user-email'); }
             if (!authContainer || !appContainer) return; 
+            
+            // Note: We don't force remove 'hidden' immediately here to allow splash screen to cover initial load
+            // But for functionality we set the flex/hidden classes
+            
             if (user) {
-                authContainer.classList.add('hidden'); appContainer.classList.remove('hidden'); appContainer.classList.add('flex');
+                authContainer.classList.add('hidden'); 
+                appContainer.classList.remove('hidden'); 
+                appContainer.classList.add('flex');
                 if (userEmail) userEmail.textContent = user.displayName || user.email;
                 if (userAvatar) { if(user.photoURL) { userAvatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">`; } else { const initial = (user.email || 'U')[0].toUpperCase(); userAvatar.textContent = initial; } }
                 checkOnboarding();
-            } else { authContainer.classList.remove('hidden'); appContainer.classList.add('hidden'); appContainer.classList.remove('flex'); }
+            } else { 
+                // Only show auth container if splash is done or logically let it sit behind splash
+                authContainer.classList.remove('hidden'); 
+                appContainer.classList.add('hidden'); 
+                appContainer.classList.remove('flex'); 
+            }
         });
 
         // Accessibility Functions
@@ -827,7 +909,7 @@
                 const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
                 const result = await callGeminiAPI(text, rawBase64, language);
                 
-                await saveToHistory(result, text, language); // Save result to history
+                await saveToHistory(result, text, language); 
                 
                 renderResults(result);
                 const speakBtn = document.getElementById('speak-btn');
@@ -845,12 +927,16 @@
             const historyItem = {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 summary: data.summary,
-                terms: data.terms,
-                checklist: data.checklist,
-                notes: data.notes,
+                medicines: data.medicines || [],
+                dosage_table: data.dosage_table || [],
+                critical_warnings: data.critical_warnings || [],
+                follow_up: data.follow_up || "",
+                terms: data.terms || [],
+                checklist: data.checklist || [],
+                notes: data.notes || [],
                 originalText: text ? (text.length > 100 ? text.substring(0, 100) + "..." : text) : "Image Upload",
                 language: language,
-                preview: data.summary.substring(0, 80) + "..."
+                preview: data.summary ? data.summary.substring(0, 80) + "..." : "No summary"
             };
             try {
                 await db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('history').add(historyItem);
@@ -880,12 +966,10 @@
                 }
 
                 let html = '';
-                currentHistoryData = []; // Reset global store
-                
-                // Use snapshot.docs to iterate as an array, ensuring index is correctly passed
+                currentHistoryData = []; 
                 snapshot.docs.forEach((doc, index) => {
                     const data = doc.data();
-                    currentHistoryData.push(data); // Store for retrieval
+                    currentHistoryData.push(data);
                     const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString() : 'Recent';
                     html += `
                         <div onclick="loadHistoryItem(${index})" class="p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors last:border-0 group">
@@ -912,23 +996,18 @@
             const data = currentHistoryData[index];
             if (!data) return;
             
-            // Restore input text if available (gives context to the result)
             if (inputText && data.originalText) {
                 inputText.value = data.originalText;
             }
 
-            // Populate the UI with historical data
             renderResults(data);
             
-            // Set Language for speech
             currentLanguage = data.language || 'English';
 
-            // Show Results Section
             closeHistory();
             if(inputSection) inputSection.classList.add('hidden');
             if(resultsSection) resultsSection.classList.remove('hidden');
 
-            // Handle Speak Button Visibility
             const speakBtn = document.getElementById('speak-btn');
             if(speakBtn) { 
                 if (currentLanguage === 'English') { 
@@ -949,11 +1028,150 @@
             if(termsList) termsList.innerHTML = '';
             if(checklistContainer) checklistContainer.innerHTML = '';
             if(notesList) notesList.innerHTML = '';
+            document.getElementById('medicines-container').innerHTML = '';
+            document.getElementById('dosage-table-container').classList.add('hidden');
+            document.getElementById('dosage-content-area').innerHTML = '';
+            document.getElementById('critical-warnings-container').innerHTML = '';
+            document.getElementById('critical-warnings-container').classList.add('hidden');
+            document.getElementById('follow-up-container').classList.add('hidden');
         }
 
         function renderResults(data) {
             if(summaryContent) summaryContent.textContent = data.summary;
-            if(termsList) { if (data.terms && data.terms.length > 0) { termsList.innerHTML = data.terms.map(t => `<li class="bg-slate-50 p-3 rounded-lg border border-slate-100"><span class="block font-bold text-teal-700 mb-1">${t.term}</span><span class="block text-slate-600 text-sm leading-snug">${t.definition}</span></li>`).join(''); } else { termsList.innerHTML = '<p class="text-slate-500 italic">No complex terms found to explain.</p>'; } }
+            
+            // Render Medicines
+            const medContainer = document.getElementById('medicines-container');
+            if(medContainer) {
+                if(data.medicines && data.medicines.length > 0) {
+                    medContainer.innerHTML = data.medicines.map(m => `
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                            <h4 class="font-bold text-teal-700 text-lg mb-2">${m.name}</h4>
+                            <div class="space-y-1 text-sm text-slate-600">
+                                <p><span class="font-medium text-slate-800">Purpose:</span> ${m.purpose}</p>
+                                <p><span class="font-medium text-slate-800">Timing:</span> ${m.timing}</p>
+                                <p><span class="font-medium text-slate-800">Side Effects:</span> ${m.side_effects}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    medContainer.innerHTML = '';
+                }
+            }
+
+            // Render Dosage Table (Responsive: Cards for Mobile, Table for Desktop)
+            const dosageContainer = document.getElementById('dosage-table-container');
+            const dosageContentArea = document.getElementById('dosage-content-area');
+            
+            if(dosageContainer && dosageContentArea) {
+                if(data.dosage_table && data.dosage_table.length > 0) {
+                    dosageContainer.classList.remove('hidden');
+                    
+                    // Mobile View (Cards)
+                    const mobileView = `
+                        <div class="md:hidden space-y-4">
+                            ${data.dosage_table.map(d => `
+                                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-sm">
+                                    <div class="font-bold text-teal-700 text-base mb-3 pb-2 border-b border-slate-200">${d.name || d.medicine}</div>
+                                    <div class="grid grid-cols-3 gap-2 mb-3">
+                                        <div class="bg-white p-2 rounded-lg text-center border border-slate-200 shadow-sm">
+                                            <div class="text-orange-400 mb-1 flex justify-center"><i data-lucide="sun" class="h-5 w-5"></i></div>
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Morn</div>
+                                            <div class="text-lg font-bold text-slate-800">${d.morning}</div>
+                                        </div>
+                                        <div class="bg-white p-2 rounded-lg text-center border border-slate-200 shadow-sm">
+                                            <div class="text-yellow-500 mb-1 flex justify-center"><i data-lucide="sun-medium" class="h-5 w-5"></i></div>
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Noon</div>
+                                            <div class="text-lg font-bold text-slate-800">${d.afternoon}</div>
+                                        </div>
+                                        <div class="bg-white p-2 rounded-lg text-center border border-slate-200 shadow-sm">
+                                            <div class="text-indigo-400 mb-1 flex justify-center"><i data-lucide="moon" class="h-5 w-5"></i></div>
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Night</div>
+                                            <div class="text-lg font-bold text-slate-800">${d.night}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm text-slate-600 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                                        <span class="font-medium text-slate-500">Duration:</span>
+                                        <span class="font-bold text-slate-800">${d.duration}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+
+                    // Desktop View (Table)
+                    const desktopView = `
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full text-sm text-left text-slate-600">
+                                <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Medicine</th>
+                                        <th class="px-4 py-3 text-center"><i data-lucide="sun" class="h-4 w-4 inline mr-1 text-orange-400"></i>Morning</th>
+                                        <th class="px-4 py-3 text-center"><i data-lucide="sun-medium" class="h-4 w-4 inline mr-1 text-yellow-500"></i>Afternoon</th>
+                                        <th class="px-4 py-3 text-center"><i data-lucide="moon" class="h-4 w-4 inline mr-1 text-indigo-400"></i>Night</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.dosage_table.map(d => `
+                                        <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                                            <td class="px-4 py-3 font-medium text-teal-700">${d.name || d.medicine}</td>
+                                            <td class="px-4 py-3 text-center font-bold">${d.morning}</td>
+                                            <td class="px-4 py-3 text-center font-bold">${d.afternoon}</td>
+                                            <td class="px-4 py-3 text-center font-bold">${d.night}</td>
+                                            <td class="px-4 py-3">${d.duration}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                    dosageContentArea.innerHTML = mobileView + desktopView;
+                    lucide.createIcons({ root: dosageContentArea });
+                } else {
+                    dosageContainer.classList.add('hidden');
+                }
+            }
+
+            // Render Critical Warnings
+            const warningsContainer = document.getElementById('critical-warnings-container');
+            if(warningsContainer) {
+                if(data.critical_warnings && data.critical_warnings.length > 0) {
+                    warningsContainer.classList.remove('hidden');
+                    warningsContainer.innerHTML = data.critical_warnings.map(w => {
+                        let icon = 'alert-triangle';
+                        let colorClass = 'bg-red-50 text-red-700 border-red-200';
+                        const lowerW = w.toLowerCase();
+                        if(lowerW.includes('alcohol')) { icon = 'wine-off'; colorClass = 'bg-orange-50 text-orange-700 border-orange-200'; }
+                        else if(lowerW.includes('food')) { icon = 'utensils'; colorClass = 'bg-blue-50 text-blue-700 border-blue-200'; }
+                        else if(lowerW.includes('skip')) { icon = 'alert-circle'; }
+                        else if(lowerW.includes('doctor') || lowerW.includes('consult')) { icon = 'stethoscope'; colorClass = 'bg-purple-50 text-purple-700 border-purple-200'; }
+                        
+                        return `
+                        <div class="flex items-center gap-3 p-3 rounded-lg border ${colorClass}">
+                            <i data-lucide="${icon}" class="h-5 w-5 flex-shrink-0"></i>
+                            <span class="font-bold text-sm">${w}</span>
+                        </div>`;
+                    }).join('');
+                    lucide.createIcons({ root: warningsContainer });
+                } else {
+                    warningsContainer.classList.add('hidden');
+                }
+            }
+
+            // Render Follow Up
+            const followUpContainer = document.getElementById('follow-up-container');
+            const followUpText = document.getElementById('follow-up-text');
+            if(followUpContainer && followUpText) {
+                if(data.follow_up) {
+                    followUpContainer.classList.remove('hidden');
+                    followUpText.textContent = data.follow_up;
+                } else {
+                    followUpContainer.classList.add('hidden');
+                }
+            }
+
+            if(termsList) { if (data.terms && data.terms.length > 0) { termsList.innerHTML = data.terms.map(t => `<li class="bg-slate-50 p-3 rounded-lg border border-slate-100"><span class="block font-bold text-teal-700 mb-1">${t.term}</span><span class="block text-slate-600 text-sm leading-snug">${t.definition}</span></li>`).join(''); } else { termsList.innerHTML = '<p class="text-slate-500 italic">No specific medical terms to explain.</p>'; } }
             if(checklistContainer) { if (data.checklist && data.checklist.length > 0) { checklistContainer.innerHTML = data.checklist.map(item => `<label class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group"><div class="relative flex items-center pt-1"><input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"></div><span class="text-slate-700 group-hover:text-slate-900 transition-colors">${item}</span></label>`).join(''); } else { checklistContainer.innerHTML = '<p class="text-slate-500 italic">No specific actions found.</p>'; } }
             if(notesList) { if (data.notes && data.notes.length > 0) { notesList.innerHTML = data.notes.map(note => `<li class="flex items-start gap-3 text-slate-700 bg-white p-3 rounded-lg border border-amber-100 shadow-sm"><i data-lucide="alert-circle" class="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5"></i><span>${note}</span></li>`).join(''); lucide.createIcons({ root: notesList }); } else { notesList.innerHTML = '<p class="text-slate-500 italic">No warnings or extra notes found.</p>'; } }
         }
@@ -980,11 +1198,83 @@
         
         function findBestVoice(voices) { const langMap = { 'English': 'en-US', 'Hindi': 'hi-IN', 'Telugu': 'te-IN', 'Tamil': 'ta-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN', 'Marathi': 'mr-IN', 'Gujarati': 'gu-IN', 'Bengali': 'bn-IN', 'Punjabi': 'pa-IN', 'Urdu': 'ur-IN', 'Odia': 'or-IN', 'Assamese': 'as-IN', 'Maithili': 'mai-IN', 'Santali': 'sat-IN', 'Kashmiri': 'ks-IN', 'Nepali': 'ne-NP', 'Konkani': 'kok-IN', 'Sindhi': 'sd-IN', 'Dogri': 'doi-IN', 'Manipuri': 'mni-IN', 'Bodo': 'brx-IN', 'Sanskrit': 'sa-IN' }; const targetLang = langMap[currentLanguage] || 'en-US'; const langVoices = voices.filter(v => v.lang === targetLang || v.lang.startsWith(targetLang.split('-')[0])); if (langVoices.length === 0) return null; const preferredKeywords = ['Google', 'Female', 'Samantha', 'Zira', 'Eva', 'Veena', 'Heera', 'Rishi']; for (const keyword of preferredKeywords) { const found = langVoices.find(v => v.name.includes(keyword)); if (found) return found; } return langVoices[0]; }
         function updateSpeakButton(speaking) { const btn = document.getElementById('speak-btn'); if (!btn) return; if (speaking) { btn.innerHTML = '<i data-lucide="square" class="h-5 w-5 fill-current"></i>'; btn.classList.add('text-red-500', 'border-red-200'); } else { btn.innerHTML = '<i data-lucide="volume-2" class="h-5 w-5"></i>'; btn.classList.remove('text-red-500', 'border-red-200'); } lucide.createIcons({ root: btn.parentNode }); }
-        function generateSpeechText() { let text = ""; text += "Summary: " + (summaryContent ? (summaryContent.textContent || "") : "") + ". "; text += "Key Medical Terms: "; if(termsList) { const termItems = termsList.querySelectorAll('li'); termItems.forEach(item => { text += item.textContent + ". "; }); } text += "Your To-Do List: "; if(checklistContainer) { const checkItems = checklistContainer.querySelectorAll('label'); checkItems.forEach(item => { text += item.textContent.trim() + ". "; }); } text += "Important Notes: "; if(notesList) { const noteItems = notesList.querySelectorAll('li'); noteItems.forEach(item => { text += item.textContent + ". "; }); } return text; }
+        
+        function generateSpeechText() { 
+            let text = ""; 
+            text += "Summary: " + (summaryContent ? (summaryContent.textContent || "") : "") + ". ";
+            
+            // Add medicines to speech
+            const medContainer = document.getElementById('medicines-container');
+            if (medContainer && medContainer.children.length > 0) {
+                text += "Medicines Guide: ";
+                const headers = medContainer.querySelectorAll('h4');
+                headers.forEach(h => { text += h.textContent + ", "; });
+                text += ". ";
+            }
+
+            // Add dosage to speech
+            const dosageContentArea = document.getElementById('dosage-content-area');
+            if (dosageContentArea && dosageContentArea.children.length > 0) {
+                text += "Dosage Schedule available. ";
+            }
+
+            // Add critical warnings to speech
+            const warningsContainer = document.getElementById('critical-warnings-container');
+            if (warningsContainer && warningsContainer.children.length > 0) {
+                text += "Critical Warnings: ";
+                const warnings = warningsContainer.querySelectorAll('span');
+                warnings.forEach(w => { text += w.textContent + ". "; });
+            }
+
+            text += "Key Medical Terms: "; 
+            if(termsList) { const termItems = termsList.querySelectorAll('li'); termItems.forEach(item => { text += item.textContent + ". "; }); } 
+            text += "Your To-Do List: "; 
+            if(checklistContainer) { const checkItems = checklistContainer.querySelectorAll('label'); checkItems.forEach(item => { text += item.textContent.trim() + ". "; }); } 
+            text += "Important Notes: "; 
+            if(notesList) { const noteItems = notesList.querySelectorAll('li'); noteItems.forEach(item => { text += item.textContent + ". "; }); } 
+            return text; 
+        }
+
         function downloadReport() { const element = document.getElementById('download-content'); document.body.style.cursor = 'wait'; html2canvas(element, { scale: 2, backgroundColor: '#f8fafc', useCORS: true, logging: false }).then(canvas => { document.body.style.cursor = 'default'; const link = document.createElement('a'); link.download = 'Rxplain-Medical-Summary.png'; link.href = canvas.toDataURL('image/png'); link.click(); }).catch(err => { document.body.style.cursor = 'default'; console.error("Screenshot failed:", err); alert("Could not generate image. Please try again."); }); }
         
         async function callGeminiAPI(text, imageBase64, language = 'English') {
-            const systemPrompt = `You are Rxplain, an empathetic AI health assistant. Your goal is to support elderly patients, non-native speakers, and caregivers. TASK: 1. Read the provided medical text or image content. 2. Translate complex medical language into simple, comforting ${language}. 3. Be friendly, reassuring, and respectful. 4. NEVER give diagnoses or medical advice. Only explain and simplify. OUTPUT FORMAT: Return ONLY a raw JSON object (no markdown code blocks) with this exact structure: { "summary": "A clear, comforting paragraph explaining the document in ${language}.", "terms": [ { "term": "Medical Term (in English)", "definition": "Simple definition in ${language}" } ], "checklist": [ "Action item 1 in ${language}", "Action item 2 in ${language}" ], "notes": [ "Important warning or date in ${language}", "Dosage reminder in ${language}" ] } IMPORTANT: Keep the JSON keys (summary, terms, checklist, notes, term, definition) in English. Only translate the values.`;
+            const systemPrompt = `You are Rxplain, an empathetic AI health assistant. Your goal is to support elderly patients, non-native speakers, and caregivers. 
+            TASK: 
+            1. Read the provided medical text or image content (prescription/report).
+            2. Translate complex medical language into simple, comforting ${language}.
+            3. Be friendly, reassuring, and respectful.
+            4. NEVER give diagnoses or medical advice. Only explain and simplify.
+            
+            OUTPUT FORMAT: Return ONLY a raw JSON object (no markdown code blocks) with this exact structure: 
+            { 
+              "summary": "A clear, comforting paragraph explaining the document in ${language}.", 
+              "medicines": [
+                { 
+                  "name": "Medicine Name (in English)", 
+                  "purpose": "Simple purpose in ${language}", 
+                  "timing": "When to take (e.g., after food) in ${language}", 
+                  "side_effects": "Common mild side effects in ${language}" 
+                }
+              ],
+              "dosage_table": [
+                { 
+                  "medicine": "Medicine Name", 
+                  "morning": "1 or 0 or 1/2", 
+                  "afternoon": "1 or 0", 
+                  "night": "1 or 0", 
+                  "duration": "e.g., 5 days in ${language}" 
+                }
+              ],
+              "critical_warnings": [
+                "Short distinct warning strings in ${language} like 'Take with food', 'Avoid alcohol', 'Do not skip'"
+              ],
+              "follow_up": "Follow up advice or dates in ${language}",
+              "terms": [ { "term": "Medical Term (in English)", "definition": "Simple definition in ${language}" } ], 
+              "checklist": [ "Action item 1 in ${language}", "Action item 2 in ${language}" ], 
+              "notes": [ "Important warning or date in ${language}", "Dosage reminder in ${language}" ] 
+            } 
+            IMPORTANT: Keep the JSON keys (summary, medicines, dosage_table, critical_warnings, follow_up, terms, checklist, notes) in English. Only translate the values.`;
+            
             const userContent = [{ text: text || "Analyze this medical document." }];
             if (imageBase64) { userContent.push({ inlineData: { mimeType: "image/jpeg", data: imageBase64 } }); }
             const payload = { contents: [{ role: "user", parts: userContent }], systemInstruction: { parts: [{ text: systemPrompt }] }, generationConfig: { responseMimeType: "application/json" } };
