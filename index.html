@@ -7,7 +7,6 @@
     
     <meta name="description" content="Rxplain helps patients understand medical prescriptions, tablets, injections, syrups, dosage instructions, and usage in simple language." />
     <meta name="keywords" content="medical prescription explanation, tablet meaning, injection usage, syrup dosage, prescription guide" />
-    <meta name="description" content="Rxplain is an AI-powered tool that explains medical prescriptions in simple language across multiple languages." />
     <meta name="author" content="Trimitha" />
     <link rel="icon" type="image/png" href="Rxplain Logo.png" />
 
@@ -30,7 +29,14 @@
         "name": "Trimitha",
         "url": "https://trimitha.co.in"
       },
-      "operatingSystem": "All"
+      "operatingSystem": "All",
+      "founder": {
+        "@type": "Person",
+        "name": "Thrinath Polanki",
+        "sameAs": "https://www.linkedin.com/in/thrinathpolanki",
+        "url": "https://www.trimitha.co.in/founder/index.html",
+        "jobTitle": "Founder & CEO"
+      }
 
     }
     </script>
@@ -71,7 +77,7 @@
         .high-contrast-mode .bg-amber-50 { background-color: #2a2a00 !important; border-color: #ffff00 !important; }
         .high-contrast-mode .text-amber-800 { color: #ffff00 !important; }
         .high-contrast-mode button { border: 1px solid #ffffff; }
-        .high-contrast-mode .shadow-sm, .high-contrast-mode .shadow-md, .high-contrast-mode .shadow-xl { shadow: none !important; border: 1px solid #ffffff !important; }
+        .high-contrast-mode .shadow-sm, .high-contrast-mode .shadow-md, .high-contrast-mode .shadow-xl { box-shadow: none !important; border: 1px solid #ffffff !important; }
 
         /* Animations */
         @keyframes fadeInUp {
@@ -337,6 +343,47 @@
                 </div>
             </div>
 
+            <!-- Diet Modal -->
+            <div id="diet-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+                    <div class="bg-teal-700 p-4 flex justify-between items-center text-white shrink-0">
+                        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="utensils" class="h-5 w-5"></i> Diet & Recovery Plan</h3>
+                        <button onclick="closeDietModal()" class="hover:bg-white/20 p-1 rounded-full transition-colors"><i data-lucide="x" class="h-5 w-5"></i></button>
+                    </div>
+                    <div class="p-6 overflow-y-auto custom-scrollbar">
+                        <div class="grid grid-cols-1 gap-6">
+                            
+                            <!-- Diet Goal Section (New) -->
+                            <div id="diet-goal-container" class="bg-teal-50 p-4 rounded-xl border border-teal-100 hidden">
+                                <h4 class="font-bold text-teal-800 text-sm uppercase tracking-wider mb-1 flex items-center gap-2">
+                                    <i data-lucide="target" class="h-4 w-4"></i> Goal
+                                </h4>
+                                <p id="diet-goal-text" class="text-teal-700 text-sm font-medium leading-relaxed"></p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-green-700 flex items-center gap-2 mb-3"><i data-lucide="check-circle" class="h-4 w-4"></i> Foods to Eat</h4>
+                                <ul id="diet-eat-list" class="space-y-2 text-sm text-slate-600 list-disc list-outside ml-4 marker:text-green-500"></ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-red-600 flex items-center gap-2 mb-3"><i data-lucide="x-circle" class="h-4 w-4"></i> Foods to Avoid</h4>
+                                <ul id="diet-avoid-list" class="space-y-2 text-sm text-slate-600 list-disc list-outside ml-4 marker:text-red-500"></ul>
+                            </div>
+                            <div class="pt-4 border-t border-slate-100">
+                                <h4 class="font-bold text-blue-600 flex items-center gap-2 mb-2"><i data-lucide="droplet" class="h-4 w-4"></i> Hydration</h4>
+                                <p id="diet-hydration" class="text-sm text-slate-600 mb-4"></p>
+                                
+                                <h4 class="font-bold text-amber-600 flex items-center gap-2 mb-2"><i data-lucide="lightbulb" class="h-4 w-4"></i> Daily Tips</h4>
+                                <ul id="diet-tips-list" class="space-y-2 text-sm text-slate-600"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-slate-50 text-center shrink-0 border-t border-slate-200">
+                        <button onclick="closeDietModal()" class="bg-teal-600 text-white px-6 py-2 rounded-full hover:bg-teal-700 transition-colors font-medium">Close</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="how-to-use-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                     <div class="bg-teal-700 p-4 flex justify-between items-center text-white shrink-0"><h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5"></i> How to Use Rxplain</h3><button onclick="closeHowToUse()" class="hover:bg-white/20 p-1 rounded-full transition-colors"><i data-lucide="x" class="h-5 w-5"></i></button></div>
@@ -426,6 +473,22 @@
                     <!-- Critical Warnings -->
                     <div id="critical-warnings-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden"></div>
 
+                    <!-- Diet & Recovery Plan Trigger (New) -->
+                    <div id="diet-trigger" class="hidden bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4 border border-green-100 shadow-sm cursor-pointer hover:shadow-md transition-all flex items-center justify-between group" onclick="openDietModal()">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-green-600">
+                                <i data-lucide="utensils" class="h-6 w-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800 group-hover:text-teal-700 transition-colors">Diet & Recovery Plan</h3>
+                                <p class="text-sm text-slate-500">Click to view recommended foods & tips</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-2 rounded-full text-slate-400 group-hover:text-teal-600 transition-colors">
+                            <i data-lucide="chevron-right" class="h-5 w-5"></i>
+                        </div>
+                    </div>
+
                     <!-- Diagnosis & Terms -->
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-3"><div class="p-2 bg-white rounded-lg shadow-sm text-teal-600"><i data-lucide="activity" class="h-5 w-5"></i></div><h3 class="text-lg font-bold text-slate-800">Diagnosis & Medical Terms</h3></div>
@@ -470,15 +533,35 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqFVoY5H0FidGLBrhJ4W3eg0On2C4P5NsmPtNmvbWwNQmRhH35rtZnV8n-Zu_blm0XIg/exec"; 
-        const firebaseConfig = { apiKey: "AIzaSyDsQW1OeORofDXT8qBT97XC0B1lQWh1cq4", authDomain: "rxplainbytrimitha.firebaseapp.com", projectId: "rxplainbytrimitha", storageBucket: "rxplainbytrimitha.firebasestorage.app", messagingSenderId: "947621758388", appId: "1:947621758388:web:669e7cce6bea0badd1dee1", measurementId: "G-LBQHQX9QV4" };
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRhZkRr6b2020EfWLx7rz-x7Rzv8ZA2go1OISoXC3QcTuLerJWGZ5TOhxjVsPIOWqdJg/exec"; 
+        
+        let firebaseConfig = { apiKey: "AIzaSyDsQW1OeORofDXT8qBT97XC0B1lQWh1cq4", authDomain: "rxplainbytrimitha.firebaseapp.com", projectId: "rxplainbytrimitha", storageBucket: "rxplainbytrimitha.firebasestorage.app", messagingSenderId: "947621758388", appId: "1:947621758388:web:669e7cce6bea0badd1dee1", measurementId: "G-LBQHQX9QV4" };
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        }
 
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const auth = firebase.auth();
         const db = firebase.firestore();
         
-        // Hardcoded appId to ensure persistent access to "rxplain" history across updates
-        const appId = 'rxplain';
+        // Handle custom auth token injection if present
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await auth.signInWithCustomToken(__initial_auth_token);
+                } else {
+                    if (!auth.currentUser) {
+                        await auth.signInAnonymously();
+                    }
+                }
+            } catch (error) {
+                console.error("Auto-auth initialization failed:", error);
+            }
+        };
+        initAuth();
+        
+        // Use environment appId if available, fallback to hardcoded
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'rxplain';
 
         document.getElementById('year').textContent = new Date().getFullYear();
         lucide.createIcons();
@@ -598,8 +681,8 @@
                 authContainer.classList.add('hidden'); 
                 appContainer.classList.remove('hidden'); 
                 appContainer.classList.add('flex');
-                if (userEmail) userEmail.textContent = user.displayName || user.email;
-                if (userAvatar) { if(user.photoURL) { userAvatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">`; } else { const initial = (user.email || 'U')[0].toUpperCase(); userAvatar.textContent = initial; } }
+                if (userEmail) userEmail.textContent = user.displayName || user.email || 'Anonymous';
+                if (userAvatar) { if(user.photoURL) { userAvatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">`; } else { const initial = (user.displayName || user.email || 'U')[0].toUpperCase(); userAvatar.textContent = initial; } }
                 checkOnboarding();
             } else { 
                 // Only show auth container if splash is done or logically let it sit behind splash
@@ -765,7 +848,13 @@
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     await userCredential.user.updateProfile({ displayName: `${firstName} ${lastName}` });
                     await userCredential.user.sendEmailVerification();
-                    alert(`Welcome, ${firstName}! Your account has been created successfully. We've sent a welcome email to ${email}. Please check your inbox.`);
+                    
+                    const successDiv = document.getElementById('auth-success');
+                    const successText = document.getElementById('auth-success-text');
+                    if(successDiv && successText) {
+                        successDiv.classList.remove('hidden');
+                        successText.textContent = `Welcome, ${firstName}! Your account has been created. We've sent a welcome email to ${email}.`;
+                    }
                     if(document.getElementById('user-email')) document.getElementById('user-email').textContent = `${firstName} ${lastName}`;
                 }
             } catch (error) {
@@ -798,8 +887,7 @@
             if(successDiv) successDiv.classList.add('hidden');
 
             try {
-                 const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                 if (signInMethods.length === 0) throw new Error("This email is not registered. Please sign up to create an account.");
+                // Firebase Email Enumeration Protection blocks fetchSignInMethodsForEmail. Send reset directly.
                 await auth.sendPasswordResetEmail(email);
                 toggleForgotPasswordView(); 
                 if(successDiv) successDiv.classList.remove('hidden');
@@ -836,6 +924,8 @@
         function handleLogout() { auth.signOut().then(() => { resetApp(); }); }
         function showHowToUse() { document.getElementById('how-to-use-modal').classList.remove('hidden'); }
         function closeHowToUse() { document.getElementById('how-to-use-modal').classList.add('hidden'); }
+        function openDietModal() { document.getElementById('diet-modal').classList.remove('hidden'); }
+        function closeDietModal() { document.getElementById('diet-modal').classList.add('hidden'); }
         function openChangePasswordModal() { document.getElementById('change-password-modal').classList.remove('hidden'); document.getElementById('cp-error-msg').classList.add('hidden'); document.getElementById('cp-success-msg').classList.add('hidden'); document.getElementById('cp-current-password').value = ''; document.getElementById('cp-new-password').value = ''; }
         function closeChangePasswordModal() { document.getElementById('change-password-modal').classList.add('hidden'); }
 
@@ -898,28 +988,8 @@
         }
         function handleAnalyze() { const text = inputText.value.trim(); if (!text && !selectedImageBase64) { showError("Please add text or upload an image to start."); return; } hideError(); if(languageModal) languageModal.classList.remove('hidden'); }
         function closeLanguageModal() { if(languageModal) languageModal.classList.add('hidden'); }
-        
-        async function selectLanguage(language) {
-            currentLanguage = language;
-            closeLanguageModal();
-            setLoading(true);
-            const text = inputText.value.trim();
-            try {
-                if (selectedImageBase64 && auth.currentUser) { try { const user = auth.currentUser; const timestamp = Date.now(); const fileName = `uploads/${user.uid}/${timestamp}_img.png`; const storageRef = firebase.storage().ref().child(fileName); storageRef.putString(selectedImageBase64, 'data_url').catch(e => console.warn(e)); } catch (e) {} }
-                const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
-                const result = await callGeminiAPI(text, rawBase64, language);
-                
-                await saveToHistory(result, text, language); 
-                
-                renderResults(result);
-                const speakBtn = document.getElementById('speak-btn');
-                if(speakBtn) { if (language === 'English') { speakBtn.classList.remove('hidden'); speakBtn.classList.add('flex'); } else { speakBtn.classList.add('hidden'); speakBtn.classList.remove('flex'); } }
-                if(inputSection) inputSection.classList.add('hidden');
-                if(resultsSection) resultsSection.classList.remove('hidden');
-            } catch (err) { console.error(err); showError("I had trouble reading that document. Please try again or try a clearer image."); } finally { setLoading(false); }
-        }
 
-        // --- History Functions ---
+        // --- History Functions (Moved Here) ---
 
         async function saveToHistory(data, text, language) {
             if (!auth.currentUser) return;
@@ -930,6 +1000,7 @@
                 medicines: data.medicines || [],
                 dosage_table: data.dosage_table || [],
                 critical_warnings: data.critical_warnings || [],
+                diet_plan: data.diet_plan || null, // Ensure this exists
                 follow_up: data.follow_up || "",
                 terms: data.terms || [],
                 checklist: data.checklist || [],
@@ -954,22 +1025,28 @@
             lucide.createIcons();
 
             try {
-                const snapshot = await db.collection('artifacts').doc(appId).collection('users').doc(auth.currentUser.uid).collection('history')
-                    .orderBy('timestamp', 'desc')
-                    .limit(20)
-                    .get();
+                const snapshot = await db.collection('artifacts').doc(appId).collection('users').doc(auth.currentUser.uid).collection('history').get();
 
-                if (snapshot.empty) {
+                // Sort and Limit in JavaScript per mandatory rules
+                let historyDocs = snapshot.docs.map(doc => doc.data());
+                historyDocs.sort((a, b) => {
+                    const timeA = a.timestamp ? a.timestamp.toMillis() : 0;
+                    const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
+                    return timeB - timeA;
+                });
+                historyDocs = historyDocs.slice(0, 20);
+
+                if (historyDocs.length === 0) {
                     list.innerHTML = '<div class="flex flex-col items-center justify-center py-8 text-slate-400"><i data-lucide="history" class="h-10 w-10 mb-2 opacity-20"></i><p>No history found.</p></div>';
                     lucide.createIcons({ root: list });
                     return;
                 }
 
                 let html = '';
-                currentHistoryData = []; 
-                snapshot.docs.forEach((doc, index) => {
-                    const data = doc.data();
-                    currentHistoryData.push(data);
+                currentHistoryData = []; // Reset global store
+                
+                historyDocs.forEach((data, index) => {
+                    currentHistoryData.push(data); // Store for retrieval
                     const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString() : 'Recent';
                     html += `
                         <div onclick="loadHistoryItem(${index})" class="p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors last:border-0 group">
@@ -996,18 +1073,23 @@
             const data = currentHistoryData[index];
             if (!data) return;
             
+            // Restore input text if available (gives context to the result)
             if (inputText && data.originalText) {
                 inputText.value = data.originalText;
             }
 
+            // Populate the UI with historical data
             renderResults(data);
             
+            // Set Language for speech
             currentLanguage = data.language || 'English';
 
+            // Show Results Section
             closeHistory();
             if(inputSection) inputSection.classList.add('hidden');
             if(resultsSection) resultsSection.classList.remove('hidden');
 
+            // Handle Speak Button Visibility
             const speakBtn = document.getElementById('speak-btn');
             if(speakBtn) { 
                 if (currentLanguage === 'English') { 
@@ -1016,6 +1098,35 @@
                     speakBtn.classList.add('hidden'); speakBtn.classList.remove('flex'); 
                 } 
             }
+        }
+        
+        async function selectLanguage(language) {
+            currentLanguage = language;
+            closeLanguageModal();
+            setLoading(true);
+            const text = inputText.value.trim();
+            try {
+                if (selectedImageBase64 && auth.currentUser) { try { const user = auth.currentUser; const timestamp = Date.now(); const fileName = `uploads/${user.uid}/${timestamp}_img.png`; const storageRef = firebase.storage().ref().child(fileName); storageRef.putString(selectedImageBase64, 'data_url').catch(e => console.warn(e)); } catch (e) {} }
+                const rawBase64 = selectedImageBase64 ? selectedImageBase64.split(',')[1] : null;
+                
+                // Extract proper mime type from the base64 string
+                const mimeMatch = selectedImageBase64 ? selectedImageBase64.match(/^data:(image\/[a-zA-Z]+);base64,/) : null;
+                const imageMimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+                
+                const result = await callGeminiAPI(text, rawBase64, language, imageMimeType);
+                
+                await saveToHistory(result, text, language); // Save result to history
+                
+                renderResults(result);
+                const speakBtn = document.getElementById('speak-btn');
+                if(speakBtn) { if (language === 'English') { speakBtn.classList.remove('hidden'); speakBtn.classList.add('flex'); } else { speakBtn.classList.add('hidden'); speakBtn.classList.remove('flex'); } }
+                if(inputSection) inputSection.classList.add('hidden');
+                if(resultsSection) resultsSection.classList.remove('hidden');
+            } catch (err) { 
+                console.error("Analysis Error:", err); 
+                // Enhanced error handler to show exactly what broke (Network vs JSON Format)
+                showError("Error: " + (err.message || "I had trouble reading that document. Please try again.")); 
+            } finally { setLoading(false); }
         }
 
         function resetApp() {
@@ -1033,6 +1144,9 @@
             document.getElementById('dosage-content-area').innerHTML = '';
             document.getElementById('critical-warnings-container').innerHTML = '';
             document.getElementById('critical-warnings-container').classList.add('hidden');
+            document.getElementById('diet-trigger').classList.add('hidden'); // Reset diet trigger
+            document.getElementById('diet-goal-container').classList.add('hidden'); // Reset diet goal
+            document.getElementById('diet-goal-text').textContent = '';
             document.getElementById('follow-up-container').classList.add('hidden');
         }
 
@@ -1159,6 +1273,43 @@
                 }
             }
 
+            // Render Diet Plan Trigger & Modal Content
+            const dietTrigger = document.getElementById('diet-trigger');
+            if(dietTrigger && data.diet_plan) {
+                dietTrigger.classList.remove('hidden');
+                
+                // Populate Modal Content
+                const goalContainer = document.getElementById('diet-goal-container');
+                const goalText = document.getElementById('diet-goal-text');
+                const eatList = document.getElementById('diet-eat-list');
+                const avoidList = document.getElementById('diet-avoid-list');
+                const hydrationText = document.getElementById('diet-hydration');
+                const tipsList = document.getElementById('diet-tips-list');
+
+                if(goalContainer && goalText && data.diet_plan.goal) {
+                    goalContainer.classList.remove('hidden');
+                    goalText.textContent = data.diet_plan.goal;
+                } else if (goalContainer) {
+                    goalContainer.classList.add('hidden');
+                }
+
+                // Helper function to format markdown bold and remove unwanted leading bullets
+                const formatDietText = (text) => {
+                    if (!text) return '';
+                    return text.replace(/^[\-\*]\s+/, '').replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-800">$1</strong>');
+                };
+
+                if(eatList && data.diet_plan.eat) eatList.innerHTML = data.diet_plan.eat.map(f => `<li>${formatDietText(f)}</li>`).join('');
+                if(avoidList && data.diet_plan.avoid) avoidList.innerHTML = data.diet_plan.avoid.map(f => `<li>${formatDietText(f)}</li>`).join('');
+                if(hydrationText) hydrationText.innerHTML = formatDietText(data.diet_plan.hydration || 'Stay well hydrated.');
+                if(tipsList && data.diet_plan.tips) tipsList.innerHTML = data.diet_plan.tips.map(t => `<li class="flex items-start gap-2"><span class="text-amber-500 flex-shrink-0">•</span> <span>${formatDietText(t)}</span></li>`).join('');
+                
+                lucide.createIcons({ root: document.getElementById('diet-modal') }); // Ensure icons in modal are rendered
+                lucide.createIcons({ root: dietTrigger });
+            } else {
+                dietTrigger.classList.add('hidden');
+            }
+
             // Render Follow Up
             const followUpContainer = document.getElementById('follow-up-container');
             const followUpText = document.getElementById('follow-up-text');
@@ -1189,7 +1340,21 @@
             const targetLang = langMap[currentLanguage] || 'en-US';
             window.currentUtterance.lang = targetLang;
             let voices = synth.getVoices();
-            if (voices.length === 0) { speechSynthesis.onvoiceschanged = () => { voices = synth.getVoices(); const bestVoice = findBestVoice(voices); if (bestVoice) window.currentUtterance.voice = bestVoice; window.currentUtterance.onend = () => { isSpeaking = false; updateSpeakButton(false); }; window.currentUtterance.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') { console.error('Speech error:', e.error); isSpeaking = false; updateSpeakButton(false); } }; synth.speak(window.currentUtterance); isSpeaking = true; updateSpeakButton(true); }; } else { const bestVoice = findBestVoice(voices); if (bestVoice) { window.currentUtterance.voice = bestVoice; } }
+            if (voices.length === 0) { 
+                speechSynthesis.onvoiceschanged = () => { 
+                    voices = synth.getVoices(); 
+                    const bestVoice = findBestVoice(voices); 
+                    if (bestVoice) window.currentUtterance.voice = bestVoice; 
+                    window.currentUtterance.onend = () => { isSpeaking = false; updateSpeakButton(false); }; 
+                    window.currentUtterance.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') { console.error('Speech error:', e.error); isSpeaking = false; updateSpeakButton(false); } }; 
+                    synth.speak(window.currentUtterance); 
+                    isSpeaking = true; updateSpeakButton(true); 
+                }; 
+                return; // Prevent immediate double-execution
+            } else { 
+                const bestVoice = findBestVoice(voices); 
+                if (bestVoice) { window.currentUtterance.voice = bestVoice; } 
+            }
             window.currentUtterance.onend = () => { isSpeaking = false; updateSpeakButton(false); };
             window.currentUtterance.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') { console.error('Speech error details:', e.error); isSpeaking = false; updateSpeakButton(false); } };
             synth.cancel();
@@ -1226,6 +1391,15 @@
                 warnings.forEach(w => { text += w.textContent + ". "; });
             }
 
+            // Add Diet info to speech
+            const dietTrigger = document.getElementById('diet-trigger');
+            if (dietTrigger && !dietTrigger.classList.contains('hidden')) {
+                text += "Diet Plan available. ";
+                const goalText = document.getElementById('diet-goal-text');
+                if(goalText && goalText.textContent) text += "Goal: " + goalText.textContent + ". ";
+                text += "Click to view details. ";
+            }
+
             text += "Key Medical Terms: "; 
             if(termsList) { const termItems = termsList.querySelectorAll('li'); termItems.forEach(item => { text += item.textContent + ". "; }); } 
             text += "Your To-Do List: "; 
@@ -1235,15 +1409,35 @@
             return text; 
         }
 
-        function downloadReport() { const element = document.getElementById('download-content'); document.body.style.cursor = 'wait'; html2canvas(element, { scale: 2, backgroundColor: '#f8fafc', useCORS: true, logging: false }).then(canvas => { document.body.style.cursor = 'default'; const link = document.createElement('a'); link.download = 'Rxplain-Medical-Summary.png'; link.href = canvas.toDataURL('image/png'); link.click(); }).catch(err => { document.body.style.cursor = 'default'; console.error("Screenshot failed:", err); alert("Could not generate image. Please try again."); }); }
-        
-        async function callGeminiAPI(text, imageBase64, language = 'English') {
+        function downloadReport() { 
+            const element = document.getElementById('download-content'); 
+            document.body.style.cursor = 'wait'; 
+            html2canvas(element, { scale: 2, backgroundColor: '#f8fafc', useCORS: true, logging: false }).then(canvas => { 
+                document.body.style.cursor = 'default'; 
+                const link = document.createElement('a'); 
+                link.download = 'Rxplain-Medical-Summary.png'; 
+                link.href = canvas.toDataURL('image/png'); 
+                link.click(); 
+            }).catch(err => { 
+                document.body.style.cursor = 'default'; 
+                console.error("Screenshot failed:", err); 
+                const errorDiv = document.getElementById('error-message');
+                const errorTxt = document.getElementById('error-text');
+                if (errorDiv && errorTxt) {
+                    errorDiv.classList.remove('hidden');
+                    errorTxt.textContent = "Could not generate image. Please try again.";
+                } 
+            }); 
+        }
+
+        async function callGeminiAPI(text, imageBase64, language = 'English', mimeType = 'image/jpeg') {
             const systemPrompt = `You are Rxplain, an empathetic AI health assistant. Your goal is to support elderly patients, non-native speakers, and caregivers. 
             TASK: 
             1. Read the provided medical text or image content (prescription/report).
             2. Translate complex medical language into simple, comforting ${language}.
             3. Be friendly, reassuring, and respectful.
-            4. NEVER give diagnoses or medical advice. Only explain and simplify.
+            4. Analyze the condition and prescribed medicines to provide a proper diet plan that supports recovery.
+            5. Suggest foods that improve recovery speed, reduce side effects, and support digestion/immunity.
             
             OUTPUT FORMAT: Return ONLY a raw JSON object (no markdown code blocks) with this exact structure: 
             { 
@@ -1268,16 +1462,25 @@
               "critical_warnings": [
                 "Short distinct warning strings in ${language} like 'Take with food', 'Avoid alcohol', 'Do not skip'"
               ],
+              "diet_plan": {
+                "goal": "How this diet helps recovery in ${language} (e.g., 'To boost immunity and reduce inflammation')",
+                "eat": ["Food item 1 (plain text, no markdown bullets) in ${language}", "Food item 2 in ${language}"],
+                "avoid": ["Food item A (plain text, no markdown bullets) in ${language}", "Food item B in ${language}"],
+                "hydration": "Guidance on water/fluid intake in ${language}",
+                "tips": ["Simple daily diet tip 1 (plain text) in ${language}", "Tip 2 in ${language}"]
+              },
               "follow_up": "Follow up advice or dates in ${language}",
               "terms": [ { "term": "Medical Term (in English)", "definition": "Simple definition in ${language}" } ], 
               "checklist": [ "Action item 1 in ${language}", "Action item 2 in ${language}" ], 
               "notes": [ "Important warning or date in ${language}", "Dosage reminder in ${language}" ] 
             } 
-            IMPORTANT: Keep the JSON keys (summary, medicines, dosage_table, critical_warnings, follow_up, terms, checklist, notes) in English. Only translate the values.`;
+            IMPORTANT: Keep the JSON keys (summary, medicines, dosage_table, critical_warnings, diet_plan, goal, eat, avoid, hydration, tips, follow_up, terms, checklist, notes) in English. Only translate the values. Ensure diet suggestions align with Indian food habits where applicable and are safe/non-prescriptive.`;
             
             const userContent = [{ text: text || "Analyze this medical document." }];
-            if (imageBase64) { userContent.push({ inlineData: { mimeType: "image/jpeg", data: imageBase64 } }); }
+            if (imageBase64) { userContent.push({ inlineData: { mimeType: mimeType, data: imageBase64 } }); }
+            
             const payload = { contents: [{ role: "user", parts: userContent }], systemInstruction: { parts: [{ text: systemPrompt }] }, generationConfig: { responseMimeType: "application/json" } };
+            
             let attempt = 0;
             while (attempt < MAX_RETRIES) {
                 try {
@@ -1285,10 +1488,26 @@
                     const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', headers: headers, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`API Error: ${response.status}`);
                     const data = await response.json();
+                    
                     if (data.error) throw new Error(data.error);
+
                     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!rawText) throw new Error("No content generated");
-                    return JSON.parse(rawText);
+                    if (!rawText) throw new Error("No content generated by AI.");
+
+                    let cleanedText = rawText;
+                    
+                    // Robust JSON extraction: Strip out any markdown formatting or extra text
+                    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        cleanedText = jsonMatch[0];
+                    }
+
+                    try {
+                        return JSON.parse(cleanedText);
+                    } catch (parseError) {
+                        console.error("JSON parsing error. Raw string:", rawText);
+                        throw new Error("AI response format was unreadable.");
+                    }
                 } catch (error) {
                     console.warn(`Attempt ${attempt + 1} failed:`, error);
                     attempt++;
