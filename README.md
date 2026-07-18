@@ -4,7 +4,6 @@ Short description
 - Rxplain is a static single-page website that presents a clean, minimal front-end for a medical explanation/translation tool. The page is styled with Tailwind CSS, uses Lucide icons, and the Inter font from Google Fonts. A clear disclaimer notifies users that the tool is informational and not a substitute for medical advice.
 
 Important note about source inspection
-- This README was created from the repository file: https://github.com/QuantumSpace0/Rxplain/blob/83c9b81de9f10d512c212a4c14dae0287fb917e7/index.html
 - The code-reading tool used to inspect the repository returned a partial snapshot (the first portion of `index.html`). The results may be incomplete. This README documents only the UI, structure, and resources that are explicitly present in the retrieved portion of `index.html`. For the definitive source and any additional functionality, please view the full file in the GitHub UI using the link above.
 
 Table of contents
