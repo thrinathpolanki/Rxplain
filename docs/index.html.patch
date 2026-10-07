@@ -1,0 +1,373 @@
+--- /home/claude/patch/index.orig.html	2026-10-06 11:52:07.696220959 +0000
++++ index.html	2026-10-07 09:38:20.155566212 +0000
+@@ -47,8 +47,6 @@
+     <!-- Lucide Icons -->
+     <script src="https://unpkg.com/lucide@latest"></script>
+ 
+-    <!-- html2canvas for Screenshot -->
+-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+ 
+     <!-- Firebase SDKs (v9 compat) -->
+     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+@@ -445,6 +443,44 @@
+                 </div>
+             </div>
+ 
++            <!-- PDF EXPORT: patient details modal (opened by downloadReport()) -->
++            <div id="patient-details-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up" onclick="if(event.target===this)closePatientDetailsModal()">
++                <div role="dialog" aria-modal="true" aria-labelledby="pdf-modal-title" aria-describedby="pdf-modal-desc" class="bg-white rounded-2xl shadow-2xl max-w-md w-full flex flex-col max-h-[90vh] border border-slate-200">
++                    <div class="bg-teal-700 px-6 py-5 shrink-0 rounded-t-2xl flex items-center justify-between">
++                        <h3 id="pdf-modal-title" class="text-white font-bold text-xl flex items-center gap-3"><i data-lucide="file-text" class="h-6 w-6"></i> Patient Details</h3>
++                        <button type="button" onclick="closePatientDetailsModal()" class="text-teal-100 hover:text-white transition-colors p-1 rounded-full hover:bg-teal-600" aria-label="Close"><i data-lucide="x" class="h-6 w-6"></i></button>
++                    </div>
++                    <form id="patient-details-form" novalidate onsubmit="handlePatientDetailsSubmit(event)" class="flex flex-col min-h-0">
++                        <div class="p-6 overflow-y-auto custom-scrollbar bg-slate-50 space-y-5">
++                            <p id="pdf-modal-desc" class="text-slate-600 text-sm font-medium">These details are printed on your PDF report only.</p>
++                            <div>
++                                <label for="pdf-patient-name" class="block text-sm font-bold text-slate-700 mb-1">Patient Name <span class="text-red-600" aria-hidden="true">*</span></label>
++                                <input id="pdf-patient-name" type="text" maxlength="100" autocomplete="off" required aria-required="true" aria-describedby="pdf-name-error" class="w-full px-4 py-3 text-base rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 read-only:bg-slate-100 read-only:text-slate-600">
++                                <p id="pdf-name-error" class="hidden mt-1 text-sm text-red-700 font-medium" role="alert"></p>
++                                <label class="mt-3 flex items-center gap-3 cursor-pointer select-none">
++                                    <input id="pdf-use-account" type="checkbox" onchange="onAccountDetailsToggle()" aria-describedby="pdf-account-hint" class="h-5 w-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500">
++                                    <span class="text-sm font-medium text-slate-700">Use the account details</span>
++                                </label>
++                                <p id="pdf-account-hint" class="mt-1 ml-8 text-xs text-slate-500"></p>
++                            </div>
++                            <div>
++                                <label for="pdf-patient-age" class="block text-sm font-bold text-slate-700 mb-1">Age <span class="text-red-600" aria-hidden="true">*</span></label>
++                                <input id="pdf-patient-age" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" required aria-required="true" aria-describedby="pdf-age-error" placeholder="e.g. 45" class="w-full px-4 py-3 text-base rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
++                                <p id="pdf-age-error" class="hidden mt-1 text-sm text-red-700 font-medium" role="alert"></p>
++                            </div>
++                            <div id="pdf-error" class="hidden p-4 bg-red-50 text-red-700 rounded-lg flex items-start gap-3" role="alert"><i data-lucide="alert-circle" class="h-5 w-5 flex-shrink-0 mt-0.5"></i><div><p id="pdf-error-text" class="text-sm font-medium"></p><p id="pdf-error-ref" class="hidden text-xs mt-1 text-red-600"></p></div></div>
++                        </div>
++                        <div class="p-4 border-t border-slate-200 bg-white rounded-b-2xl shrink-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
++                            <button type="button" id="pdf-cancel-btn" onclick="closePatientDetailsModal()" class="justify-center text-slate-600 hover:text-slate-800 font-medium transition-colors py-3 px-6 rounded-full hover:bg-slate-100">Cancel</button>
++                            <button type="submit" id="pdf-submit-btn" class="justify-center flex items-center gap-2 py-3 px-6 rounded-full font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-teal-600">
++                                <span id="pdf-submit-idle" class="flex items-center gap-2"><i data-lucide="download" class="h-5 w-5"></i><span>Generate PDF</span></span>
++                                <span id="pdf-submit-busy" class="hidden items-center gap-2"><i data-lucide="loader-2" class="animate-spin h-5 w-5"></i><span>Generating PDF...</span></span>
++                            </button>
++                        </div>
++                    </form>
++                </div>
++            </div>
++
+             <div id="results-section" class="hidden space-y-6 animate-fade-in-up">
+                 <div class="flex items-center justify-between mb-6">
+                     <h2 class="text-xl md:text-2xl font-bold text-slate-800">Here is what we found</h2>
+@@ -514,7 +550,7 @@
+                     </div>
+                 </div>
+                 <div class="mt-8 flex flex-col-reverse sm:flex-row items-center justify-between pb-8 gap-4">
+-                    <button onclick="downloadReport()" class="p-4 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm group" title="Save as Image"><i data-lucide="download" class="h-6 w-6 group-hover:scale-110 transition-transform"></i></button>
++                    <button onclick="downloadReport()" class="p-4 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-600 text-slate-500 rounded-full transition-all shadow-sm group" title="Download as PDF" aria-label="Download as PDF"><i data-lucide="download" class="h-6 w-6 group-hover:scale-110 transition-transform"></i></button>
+                     <button id="clear-btn" class="w-full sm:w-auto justify-center flex items-center gap-2 px-8 py-4 rounded-full text-lg font-bold shadow-md transition-all bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 active:scale-95"><i data-lucide="arrow-left" class="h-5 w-5"></i><span>Analyze Another</span></button>
+                 </div>
+             </div>
+@@ -568,6 +604,7 @@
+         
+         let selectedImageBase64 = null;
+         let currentLanguage = 'English'; 
++        let currentReportData = null; // exact result object currently on screen (new analysis or opened from history); used by the PDF export
+         let isSpeaking = false;
+         let currentUtterance = null;
+         let isLoginMode = true;
+@@ -1079,6 +1116,7 @@
+             }
+ 
+             // Populate the UI with historical data
++            currentReportData = data;
+             renderResults(data);
+             
+             // Set Language for speech
+@@ -1117,6 +1155,7 @@
+                 
+                 await saveToHistory(result, text, language); // Save result to history
+                 
++                currentReportData = result;
+                 renderResults(result);
+                 const speakBtn = document.getElementById('speak-btn');
+                 if(speakBtn) { if (language === 'English') { speakBtn.classList.remove('hidden'); speakBtn.classList.add('flex'); } else { speakBtn.classList.add('hidden'); speakBtn.classList.remove('flex'); } }
+@@ -1130,6 +1169,7 @@
+         }
+ 
+         function resetApp() {
++            currentReportData = null;
+             if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; updateSpeakButton(false); }
+             if(inputText) inputText.value = '';
+             clearImage(); hideError(); setLoading(false);
+@@ -1409,26 +1449,256 @@
+             return text; 
+         }
+ 
+-        function downloadReport() { 
+-            const element = document.getElementById('download-content'); 
+-            document.body.style.cursor = 'wait'; 
+-            html2canvas(element, { scale: 2, backgroundColor: '#f8fafc', useCORS: true, logging: false }).then(canvas => { 
+-                document.body.style.cursor = 'default'; 
+-                const link = document.createElement('a'); 
+-                link.download = 'Rxplain-Medical-Summary.png'; 
+-                link.href = canvas.toDataURL('image/png'); 
+-                link.click(); 
+-            }).catch(err => { 
+-                document.body.style.cursor = 'default'; 
+-                console.error("Screenshot failed:", err); 
+-                const errorDiv = document.getElementById('error-message');
+-                const errorTxt = document.getElementById('error-text');
+-                if (errorDiv && errorTxt) {
+-                    errorDiv.classList.remove('hidden');
+-                    errorTxt.textContent = "Could not generate image. Please try again.";
+-                } 
+-            }); 
++        // === PDF EXPORT START (replaces the old screenshot-based export) ======================
++        // Flow: downloadReport() -> patient modal -> handlePatientDetailsSubmit() -> generatePdfReport()
++        //       -> POST /api/generate-pdf (Python/ReportLab) -> real PDF -> browser download.
++        // The PDF is built server-side from `currentReportData` (the exact object passed to
++        // renderResults). The screen is never scraped and Gemini is never called again.
++        const PDF_ENDPOINT = '/api/generate-pdf';
++        const PDF_TIMEOUT_MS = 45000;
++        const PDF_ERROR_MSG = 'Could not generate the PDF. Please try again.';
++        // Only these fields are sent. History metadata (originalText, timestamps, ids) stays in the browser.
++        const PDF_RESULT_KEYS = ['summary', 'terms', 'critical_warnings', 'warnings', 'medicines', 'dosage_table', 'checklist', 'notes', 'follow_up', 'diet_plan'];
++
++        let isGeneratingPdf = false;
++        let pdfAbortController = null;
++        let pdfModalReturnFocus = null;
++        let pdfTypedName = '';
++
++        const pdfEl = (id) => document.getElementById(id);
++
++        // ---- validation (pure functions; the server validates again) ----
++        function normalizePatientName(raw) { return String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim(); }
++
++        function validatePatientName(raw) {
++            const name = normalizePatientName(raw);
++            if (!name) return { error: 'Please enter the patient name.' };
++            if (name.length > 100) return { error: 'Name must be 100 characters or fewer.' };
++            if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(name) || !/\p{L}/u.test(name)) return { error: 'Please enter a valid name using letters.' };
++            return { value: name };
++        }
++
++        function validatePatientAge(raw) {
++            const s = String(raw == null ? '' : raw).trim();
++            if (!s) return { error: 'Please enter the age.' };
++            if (!/^(0|[1-9][0-9]{0,2})$/.test(s)) return { error: 'Age must be a whole number, like 45.' };
++            const n = parseInt(s, 10);
++            if (n > 120) return { error: 'Please enter an age between 0 and 120.' };
++            return { value: n };
++        }
++
++        // ---- account / patient name ----
++        function getAccountName() {
++            const user = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : null;
++            return user && typeof user.displayName === 'string' ? normalizePatientName(user.displayName) : '';
++        }
++
++        function getPatientName() {
++            const useAccount = pdfEl('pdf-use-account');
++            return (useAccount && useAccount.checked) ? getAccountName() : normalizePatientName(pdfEl('pdf-patient-name').value);
++        }
++
++        function validatePatientDetails() {
++            const name = validatePatientName(getPatientName());
++            const age = validatePatientAge(pdfEl('pdf-patient-age').value);
++            return { valid: !name.error && !age.error, name, age };
++        }
++
++        // ---- modal UI helpers ----
++        function setPdfFieldError(inputId, errorId, message) {
++            const input = pdfEl(inputId), err = pdfEl(errorId);
++            if (message) { err.textContent = message; err.classList.remove('hidden'); input.setAttribute('aria-invalid', 'true'); input.classList.add('border-red-500'); }
++            else { err.textContent = ''; err.classList.add('hidden'); input.removeAttribute('aria-invalid'); input.classList.remove('border-red-500'); }
++        }
++        function showPdfError(msg, detail) {
++            pdfEl('pdf-error-text').textContent = msg;
++            const ref = pdfEl('pdf-error-ref');
++            ref.textContent = detail || ''; ref.classList.toggle('hidden', !detail);
++            pdfEl('pdf-error').classList.remove('hidden');
++        }
++        function hidePdfError() {
++            pdfEl('pdf-error').classList.add('hidden'); pdfEl('pdf-error-text').textContent = '';
++            pdfEl('pdf-error-ref').textContent = ''; pdfEl('pdf-error-ref').classList.add('hidden');
++        }
++
++        // Short, safe explanation shown under the main error. Technical detail stays in the console.
++        function pdfFail(code, serverMessage) { const e = new Error('PDF export failed: ' + code); e.pdfCode = code; e.serverMessage = serverMessage || ''; return e; }
++        function describePdfFailure(code, serverMessage) {
++            switch (code) {
++                case 'endpoint_unavailable': return 'The PDF service was not found on this page. Use the deployed site, or run "vercel dev" locally.';
++                case 'network': return 'Please check your internet connection.';
++                case 'timeout': return 'The request took too long.';
++                case 'invalid_request': case 'empty_result': case 'too_large': return serverMessage || '';   // server messages are written to be user-safe
++                default: return 'Reference: ' + (code || 'unknown');
++            }
++        }
++
++        function setPdfGenerating(on) {
++            const btn = pdfEl('pdf-submit-btn');
++            btn.disabled = on;
++            btn.setAttribute('aria-busy', on ? 'true' : 'false');
++            pdfEl('pdf-submit-idle').classList.toggle('hidden', on);
++            pdfEl('pdf-submit-busy').classList.toggle('hidden', !on);
++            pdfEl('pdf-submit-busy').classList.toggle('flex', on);
++            ['pdf-patient-age', 'pdf-use-account'].forEach(id => { pdfEl(id).disabled = on; });
++            pdfEl('pdf-patient-name').disabled = on;
++        }
++
++        function onAccountDetailsToggle() {
++            const cb = pdfEl('pdf-use-account'), nameInput = pdfEl('pdf-patient-name');
++            if (cb.checked) {
++                const accountName = getAccountName();
++                if (!accountName) {                       // nothing usable on the account: ask for a name instead
++                    cb.checked = false;
++                    pdfEl('pdf-account-hint').textContent = 'Your account has no name saved. Please enter the patient name.';
++                    nameInput.focus();
++                    return;
++                }
++                pdfTypedName = nameInput.value;
++                nameInput.value = accountName;
++                nameInput.readOnly = true;
++                setPdfFieldError('pdf-patient-name', 'pdf-name-error', '');
++            } else {
++                nameInput.readOnly = false;
++                nameInput.value = pdfTypedName;
++                nameInput.focus();
++            }
++        }
++
++        function openPatientDetailsModal() {
++            const modal = pdfEl('patient-details-modal');
++            if (!modal) return;
++            pdfModalReturnFocus = document.activeElement;
++            pdfEl('patient-details-form').reset();
++            pdfTypedName = '';
++            pdfEl('pdf-patient-name').readOnly = false;
++            setPdfFieldError('pdf-patient-name', 'pdf-name-error', '');
++            setPdfFieldError('pdf-patient-age', 'pdf-age-error', '');
++            hidePdfError(); setPdfGenerating(false);
++            const accountName = getAccountName();
++            pdfEl('pdf-account-hint').textContent = accountName ? ('Account name: ' + accountName) : 'No name is saved on this account.';
++            modal.classList.remove('hidden');
++            if (typeof lucide !== 'undefined') lucide.createIcons({ root: modal });
++            pdfEl('pdf-patient-name').focus();
++            modal.addEventListener('keydown', pdfModalKeydown);
++        }
++
++        function hidePatientDetailsModal() {
++            const modal = pdfEl('patient-details-modal');
++            if (!modal) return;
++            modal.removeEventListener('keydown', pdfModalKeydown);
++            modal.classList.add('hidden');
++            if (pdfModalReturnFocus && typeof pdfModalReturnFocus.focus === 'function') { try { pdfModalReturnFocus.focus(); } catch (e) { /* element gone */ } }
++        }
++
++        // Cancel / X / Esc / backdrop. If a request is running it is aborted; the result on screen is untouched.
++        function closePatientDetailsModal() {
++            if (isGeneratingPdf && pdfAbortController) { pdfAbortController.userCancelled = true; pdfAbortController.abort(); }
++            hidePatientDetailsModal();
++        }
++
++        function pdfModalKeydown(e) {
++            if (e.key === 'Escape') { e.preventDefault(); closePatientDetailsModal(); return; }
++            if (e.key !== 'Tab') return;
++            const focusable = Array.from(pdfEl('patient-details-modal').querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled && el.offsetParent !== null);
++            if (!focusable.length) return;
++            const first = focusable[0], last = focusable[focusable.length - 1];
++            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
++            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
++        }
++
++        // ---- submit ----
++        function handlePatientDetailsSubmit(event) {
++            if (event) event.preventDefault();
++            if (isGeneratingPdf) return;                                  // duplicate-click / Enter-key guard
++            hidePdfError();
++            const v = validatePatientDetails();
++            const useAccount = pdfEl('pdf-use-account').checked;
++            setPdfFieldError('pdf-patient-name', 'pdf-name-error', v.name.error || '');
++            setPdfFieldError('pdf-patient-age', 'pdf-age-error', v.age.error || '');
++            if (!v.valid) { (v.name.error && !useAccount ? pdfEl('pdf-patient-name') : pdfEl('pdf-patient-age')).focus(); return; }
++            generatePdfReport({ name: v.name.value, age: v.age.value });
++        }
++
++        // ---- request / download ----
++        function buildPdfPayload(report, patient) {
++            const result = {};
++            PDF_RESULT_KEYS.forEach(k => { if (report[k] !== undefined && report[k] !== null) result[k] = report[k]; });
++            const d = new Date();
++            const pad = (n) => String(n).padStart(2, '0');
++            return {
++                patient: { name: patient.name, age: patient.age },
++                language: currentLanguage || 'English',
++                date: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()),   // user's local date
++                result: result
++            };
++        }
++
++        function pdfFilenameFromHeader(cd) {
++            const m = /filename\*=UTF-8''([^;]+)/i.exec(cd || '');
++            if (m) { try { return decodeURIComponent(m[1]); } catch (e) { /* fall through */ } }
++            const a = /filename="([^"]+)"/i.exec(cd || '');
++            return a ? a[1] : 'Rxplain-Medical-Summary.pdf';
++        }
++
++        async function generatePdfReport(patient) {
++            if (isGeneratingPdf) return;
++            const report = currentReportData;                             // exact result object that is on screen
++            if (!report) { showPdfError(PDF_ERROR_MSG); return; }
++            isGeneratingPdf = true;
++            setPdfGenerating(true);
++            const controller = new AbortController();
++            controller.userCancelled = false;
++            pdfAbortController = controller;
++            const timer = setTimeout(() => controller.abort(), PDF_TIMEOUT_MS);
++            try {
++                let res;
++                try {
++                    res = await fetch(PDF_ENDPOINT, {
++                        method: 'POST',
++                        headers: { 'Content-Type': 'application/json' },
++                        body: JSON.stringify(buildPdfPayload(report, patient)),
++                        signal: controller.signal
++                    });
++                } catch (netErr) {
++                    if (controller.userCancelled) return;
++                    console.error('PDF request failed:', netErr);
++                    throw pdfFail(controller.signal.aborted ? 'timeout' : 'network');
++                }
++                const type = (res.headers.get('Content-Type') || '').toLowerCase();
++                if (!res.ok || type.indexOf('application/pdf') === -1) {
++                    let code = '', msg = '';
++                    if (type.indexOf('application/json') !== -1) { try { const j = await res.json(); code = j.code || ''; msg = j.error || ''; } catch (e) { /* not JSON */ } }
++                    if (!code || code === 'http_error' || code === 'method_not_allowed') {
++                        code = (res.status === 404 || res.status === 405 || res.status === 501) ? 'endpoint_unavailable' : (res.ok ? 'bad_response' : 'http_' + res.status);
++                    }
++                    throw pdfFail(code, msg);
++                }
++                const blob = await res.blob();
++                if (blob.size < 100 || (await blob.slice(0, 5).text()) !== '%PDF-') throw pdfFail('bad_response');
++                const url = URL.createObjectURL(blob);
++                const a = document.createElement('a');
++                a.href = url; a.download = pdfFilenameFromHeader(res.headers.get('Content-Disposition'));
++                document.body.appendChild(a); a.click(); a.remove();
++                setTimeout(() => URL.revokeObjectURL(url), 10000);
++                hidePatientDetailsModal();                                // success: close modal
++            } catch (err) {
++                if (controller.userCancelled) return;                     // user pressed Cancel: stay silent
++                console.error('PDF export failed:', err);                 // technical detail: console only
++                showPdfError(PDF_ERROR_MSG, describePdfFailure(err && err.pdfCode, err && err.serverMessage));   // result on screen is untouched
++            } finally {
++                clearTimeout(timer);
++                isGeneratingPdf = false; pdfAbortController = null;
++                setPdfGenerating(false);
++            }
++        }
++
++        // The existing download button calls this; the button markup is unchanged.
++        function downloadReport() {
++            if (!currentReportData) return;
++            openPatientDetailsModal();
+         }
++        // === PDF EXPORT END ======================================================================
+ 
+         async function callGeminiAPI(text, imageBase64, language = 'English', mimeType = 'image/jpeg') {
+             const systemPrompt = `You are Rxplain, an empathetic AI health assistant. Your goal is to support elderly patients, non-native speakers, and caregivers. 
