@@ -1,0 +1,3 @@
+reportlab>=4.4.0,<5
+uharfbuzz>=0.40
+Pillow>=10
