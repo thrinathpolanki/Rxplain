@@ -1,0 +1,44 @@
+{
+  "name": "Anita Sharma",
+  "age": 45,
+  "language": "English",
+  "summary": "This prescription treats a mild stomach infection. Take the medicines as shown in the schedule and drink plenty of fluids.",
+  "terms": [
+    {
+      "term": "Gastroenteritis",
+      "definition": "Irritation of the stomach and intestines that causes loose stools, cramps and sometimes vomiting."
+    }
+  ],
+  "warnings": [
+    "Take after food",
+    "Avoid alcohol"
+  ],
+  "medicines": [
+    {
+      "name": "Ofloxacin 200 mg",
+      "type": "Antibiotic",
+      "purpose": "Treats the stomach infection",
+      "morning": "1",
+      "afternoon": "0",
+      "night": "1",
+      "duration": "3 days"
+    },
+    {
+      "name": "Racecadotril 100 mg",
+      "type": "Anti-diarrhoeal",
+      "purpose": "Reduces loose stools",
+      "morning": "1",
+      "afternoon": "1",
+      "night": "1",
+      "duration": "2 days"
+    }
+  ],
+  "checklist": [
+    "Drink ORS after every loose stool",
+    "Eat light, home-cooked food"
+  ],
+  "notes": [
+    "Seek medical help if there is blood in the stool or you cannot keep fluids down."
+  ],
+  "follow_up": "Visit your doctor after 3 days if symptoms continue."
+}
