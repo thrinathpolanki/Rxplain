@@ -1,0 +1,209 @@
+{
+  "name": "Ravi Kumar Reddy",
+  "age": "62",
+  "language": "English",
+  "date": "2026-10-06",
+  "summary": "This prescription is for a chest and throat infection with fever, along with acidity and a cold-related allergy. You have been given an antibiotic to fight the infection, a medicine for fever and body pain, an acidity tablet to protect your stomach, and an anti-allergy tablet to help you breathe and sleep better. Please take every medicine at the times shown in the schedule below, and finish the full antibiotic course even if you start feeling better after a few days. Your blood sugar and blood pressure medicines should be continued exactly as before unless your doctor tells you otherwise.",
+  "terms": [
+    {
+      "term": "Upper Respiratory Tract Infection",
+      "definition": "An infection of the nose, throat and windpipe, often causing cough, sore throat, runny nose and mild fever."
+    },
+    {
+      "term": "Antibiotic",
+      "definition": "A medicine that kills or stops the growth of bacteria. It does not work against viruses, and it must be taken for the full number of days."
+    },
+    {
+      "term": "Antipyretic",
+      "definition": "A medicine that lowers fever. Paracetamol is the most common one."
+    },
+    {
+      "term": "Proton Pump Inhibitor (PPI)",
+      "definition": "A tablet that reduces acid in the stomach. It protects the stomach lining and eases acidity, burning and gas."
+    },
+    {
+      "term": "Antihistamine",
+      "definition": "A medicine that calms allergy symptoms such as sneezing, itching and a runny nose. It may make you feel sleepy."
+    },
+    {
+      "term": "Hypertension",
+      "definition": "High blood pressure. It usually has no symptoms, so the tablets must be taken every day even when you feel well."
+    },
+    {
+      "term": "Type 2 Diabetes Mellitus",
+      "definition": "A long-term condition where the body cannot use sugar properly, so blood sugar stays high. Diet, exercise and daily medicines keep it under control."
+    },
+    {
+      "term": "Expectorant",
+      "definition": "A syrup that loosens thick mucus in the chest so that it is easier to cough out."
+    }
+  ],
+  "critical_warnings": [
+    "Take antibiotic after food",
+    "Do not stop the antibiotic early",
+    "Avoid alcohol completely during treatment",
+    "Do not take extra Paracetamol - maximum 4 tablets in 24 hours",
+    "Consult your doctor if the fever lasts more than 3 days or you have trouble breathing"
+  ],
+  "medicines": [
+    {
+      "name": "Amoxicillin + Clavulanic Acid 625 mg",
+      "purpose": "Antibiotic to treat the chest and throat infection",
+      "timing": "After food",
+      "side_effects": "Loose stools, mild stomach upset, nausea"
+    },
+    {
+      "name": "Paracetamol 650 mg",
+      "purpose": "Reduces fever and relieves body pain",
+      "timing": "After food, only when fever or pain is present",
+      "side_effects": "Rarely nausea; avoid overdose"
+    },
+    {
+      "name": "Pantoprazole 40 mg",
+      "purpose": "Reduces stomach acid and protects the stomach while taking other tablets",
+      "timing": "30 minutes before breakfast on an empty stomach",
+      "side_effects": "Headache, mild stomach discomfort"
+    },
+    {
+      "name": "Cetirizine 10 mg",
+      "purpose": "Relieves sneezing, runny nose and allergy symptoms",
+      "timing": "At bedtime",
+      "side_effects": "Drowsiness, dry mouth"
+    },
+    {
+      "name": "Ambroxol Syrup 15 mg/5 ml",
+      "purpose": "Loosens mucus and eases cough",
+      "timing": "After food",
+      "side_effects": "Mild nausea, stomach upset"
+    },
+    {
+      "name": "Metformin 500 mg",
+      "purpose": "Controls blood sugar (continue as before)",
+      "timing": "With or just after food",
+      "side_effects": "Stomach upset, metallic taste, loose stools"
+    },
+    {
+      "name": "Amlodipine 5 mg",
+      "purpose": "Controls blood pressure (continue as before)",
+      "timing": "Same time every morning",
+      "side_effects": "Ankle swelling, flushing, headache"
+    },
+    {
+      "name": "Vitamin D3 60,000 IU",
+      "purpose": "Strengthens bones and supports immunity",
+      "timing": "After lunch, once a week",
+      "side_effects": "Rare at this dose"
+    },
+    {
+      "name": "ORS Powder",
+      "purpose": "Prevents dehydration during fever",
+      "timing": "Mix one sachet in 1 litre of clean water and sip through the day",
+      "side_effects": "None expected"
+    }
+  ],
+  "dosage_table": [
+    {
+      "medicine": "Amoxicillin + Clavulanic Acid 625 mg",
+      "morning": "1",
+      "afternoon": "0",
+      "night": "1",
+      "duration": "5 days"
+    },
+    {
+      "medicine": "Paracetamol 650 mg",
+      "morning": "1",
+      "afternoon": "1",
+      "night": "1",
+      "duration": "3 days, only if needed"
+    },
+    {
+      "medicine": "Pantoprazole 40 mg",
+      "morning": "1",
+      "afternoon": "0",
+      "night": "0",
+      "duration": "7 days"
+    },
+    {
+      "medicine": "Cetirizine 10 mg",
+      "morning": "0",
+      "afternoon": "0",
+      "night": "1",
+      "duration": "5 days"
+    },
+    {
+      "medicine": "Ambroxol Syrup 15 mg/5 ml",
+      "morning": "1 spoon",
+      "afternoon": "1 spoon",
+      "night": "1 spoon",
+      "duration": "5 days"
+    },
+    {
+      "medicine": "Metformin 500 mg",
+      "morning": "1",
+      "afternoon": "0",
+      "night": "1",
+      "duration": "Continue"
+    },
+    {
+      "medicine": "Amlodipine 5 mg",
+      "morning": "1",
+      "afternoon": "0",
+      "night": "0",
+      "duration": "Continue"
+    },
+    {
+      "medicine": "Vitamin D3 60,000 IU",
+      "morning": "0",
+      "afternoon": "1",
+      "night": "0",
+      "duration": "Once a week for 8 weeks"
+    },
+    {
+      "medicine": "ORS Powder",
+      "morning": "1/2",
+      "afternoon": "1/2",
+      "night": "1/2",
+      "duration": "3 days"
+    }
+  ],
+  "checklist": [
+    "Take Pantoprazole every morning on an empty stomach, 30 minutes before breakfast.",
+    "Take Amoxicillin + Clavulanic Acid after breakfast and after dinner for all 5 days.",
+    "Drink at least 8 glasses of warm water through the day.",
+    "Check your temperature morning and evening and write it down for the doctor.",
+    "Check your blood sugar once daily before breakfast.",
+    "Rest well and avoid cold drinks, ice cream and fried food.",
+    "Keep all medicine strips and this report with you for the follow-up visit."
+  ],
+  "notes": [
+    "Finish the complete antibiotic course even if the fever goes away.",
+    "Cetirizine can cause sleepiness - do not drive or climb stairs alone after taking it.",
+    "Continue Metformin and Amlodipine without a break; do not stop them on your own.",
+    "Go to the nearest hospital immediately if you have difficulty breathing, chest pain, a rash with swelling of the face, or a very high fever.",
+    "Store syrup in a cool place and use within 15 days of opening."
+  ],
+  "follow_up": "Please visit your doctor after 5 days with this report. If the fever or cough has not improved in 3 days, or if you feel worse at any time, go back earlier. Ask the doctor to review your blood sugar and blood pressure readings at the same visit.",
+  "diet_plan": {
+    "goal": "To support recovery from the infection while keeping blood sugar and blood pressure steady.",
+    "eat": [
+      "Warm vegetable soup and dal",
+      "Ragi or oats porridge without sugar",
+      "Steamed idli with sambar",
+      "Seasonal fruits such as guava, papaya and orange",
+      "Curd or buttermilk (not chilled)"
+    ],
+    "avoid": [
+      "Cold drinks and ice cream",
+      "Deep-fried and oily snacks",
+      "Sweets and sugary drinks",
+      "Very spicy food",
+      "Excess salt and pickles"
+    ],
+    "hydration": "Drink **8 to 10 glasses** of warm or room-temperature water daily, unless your doctor has limited fluids.",
+    "tips": [
+      "Eat small meals every 3 to 4 hours instead of three large meals.",
+      "Have a light dinner at least 2 hours before sleeping.",
+      "Add turmeric and pepper to warm milk or soups for comfort."
+    ]
+  }
+}
