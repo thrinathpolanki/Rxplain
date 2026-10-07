@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/generate-pdf.py": { "includeFiles": "rxplain_pdf/**", "maxDuration": 30 }
+  }
+}
